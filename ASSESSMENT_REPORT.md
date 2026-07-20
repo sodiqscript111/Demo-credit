@@ -13,7 +13,7 @@ For **Authorization**, the application strict-checks ownership to prevent **Inse
 3. **Blacklisted Actors:** Before onboarding, user identities are checked against the Lendsqr Adjutor Karma API. Known bad actors are rejected before their data is ever persisted.
 
 ### Input Validation & Protection
-We utilize the **Zod** schema validation library. Every incoming request payload (body, params, query) is validated by a global `ValidationMiddleware` against a strict schema. For instance, transfer amounts are validated to ensure they are strictly positive numbers. If validation fails, the API instantly returns a `422 Unprocessable Entity` containing a clear breakdown of the failed fields, protecting the business logic from malformed or malicious data.
+To prevent Large Payload Denial of Service (DoS) attacks, the API globally restricts incoming JSON payloads to `10kb` via Express middleware. Furthermore, we utilize the **Zod** schema validation library. Every incoming request payload (body, params, query) is validated by a global `ValidationMiddleware` against a strict schema. For instance, transfer amounts are validated to ensure they are strictly positive numbers. If validation fails, the API instantly returns a `422 Unprocessable Entity` containing a clear breakdown of the failed fields, protecting the business logic from malformed or malicious data.
 
 ### Production Security Improvements
 In a true production environment, I would further improve security by:
@@ -41,4 +41,4 @@ Reliability is prioritized through graceful degradation and retries. When integr
 1. Our monitoring alerts (e.g., Datadog) would spike showing increased `500` errors on `POST /api/v1/auth/register`. 
 2. We would query our centralized logs for the specific `x-request-id` attached to the failures and see the trace points to `AdjutorService.isBlacklisted`.
 3. Because we implemented a `withRetry` block, the system automatically attempted 3 retries before failing. 
-4. **Fix:** Since the third-party API is completely down, our system is currently designed to "fail-closed" (rejecting the user to maintain security). If this outage was prolonged, we could deploy a temporary hotfix to "fail-open" (bypass the check and flag the user in the database for a manual Karma background check once the API recovers) so that business operations are not entirely blocked.
+4. **Fix:** To make the system highly resilient to prolonged third-party outages, we would decouple the dependency by implementing an asynchronous background process using a message queue (e.g., RabbitMQ or BullMQ). Registration would instantly succeed, and a "karma_check" job would be pushed to the queue. If the Lendsqr API is down, the job would fail and be routed to a Dead Letter Queue (DLQ), where it can be automatically or manually reprocessed once the API recovers, preventing the outage from blocking our business operations.

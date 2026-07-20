@@ -2,7 +2,7 @@
 
 Demo Credit is a minimal viable product (MVP) mobile lending application backend. It provides wallet functionality enabling users to receive disbursed loans and make repayments/transfers.
 
-## 🚀 Tech Stack
+## Tech Stack
 - **Runtime:** Node.js (v18+ LTS)
 - **Language:** TypeScript
 - **Framework:** Express.js
@@ -12,15 +12,17 @@ Demo Credit is a minimal viable product (MVP) mobile lending application backend
 - **Validation:** Zod
 - **Authentication:** Faux JWT implementation & bcrypt password hashing
 
-## 🏗️ Architecture & Design Decisions
+## Architecture & Design Decisions
 The application strictly adheres to the **Controller-Service-Repository** pattern. 
 - **Controllers** handle HTTP requests, routing, and response formatting.
 - **Services** house the core business logic (e.g., wallet deduction, idempotency checks, third-party API integration).
 - **Repositories** manage database interactions (Knex queries).
 This promotes **WET and DRY principles**, clear separation of concerns, and makes the application highly testable. Dependency injection (`tsyringe`) ensures components are modular.
 
-## 🗄️ Database Design (E-R Diagram)
-*Note: A visual E-R diagram can be created in dbdesigner.net using the following schema relationship:*
+## Database Design (E-R Diagram)
+[View Interactive E-R Diagram on DBDesigner](https://erd.dbdesigner.net/designer/schema/1784544511-demo-credit)
+
+<iframe width="100%" height="500px" allowtransparency="true" allowfullscreen="true" scrolling="no" title="Embedded DB Designer IFrame" frameborder="0" src="https://erd.dbdesigner.net/designer/schema/1784544511-demo-credit?embed=true"></iframe>
 
 - **Users Table:** `id` (PK), `email`, `password_hash`, `first_name`, `last_name`, `created_at`
 - **Wallets Table:** `id` (PK), `user_id` (FK -> Users.id), `balance`, `created_at`
@@ -33,12 +35,12 @@ This promotes **WET and DRY principles**, clear separation of concerns, and make
 - A Wallet has MANY Ledger Entries (1:N)
 - A Transfer has TWO Ledger Entries (1:2 - One Debit, One Credit)
 
-## 🛡️ Key Features
+## Key Features
 - **Idempotent Transfers:** Safe POST requests using `Idempotency-Key` headers to prevent double-spending.
 - **Race Condition Prevention:** Knex transactions and `FOR UPDATE` row-level locks prevent concurrent double-spend attacks.
 - **Lendsqr Karma Integration:** Rejects onboarding for blacklisted identities automatically.
 
-## ⚙️ Local Setup & Deployment
+## Local Setup & Deployment
 
 **1. Using Docker (Recommended)**
 ```bash
@@ -52,7 +54,7 @@ This spins up both the MySQL database and the Node API, running all Knex migrati
 - Run database migrations: `npm run migrate`
 - Start server: `npm run dev`
 
-## 🧪 Testing
+## Testing
 The project features a comprehensive test suite (Unit & Integration tests) using Jest, `supertest`, and an in-memory SQLite database to mock production interactions.
 ```bash
 npm run test
