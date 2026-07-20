@@ -1,0 +1,47 @@
+services:
+
+  # ── MySQL 8 ─────────────────────────────────────────────────────────────────
+  mysql:
+    image: mysql:8.0
+    container_name: democredit-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-password}
+      MYSQL_DATABASE: ${DB_NAME:-democredit}
+    ports:
+      - "${DB_PORT:-3306}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      # Wait until MySQL actually accepts connections (not just that the process started)
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+  # ── API ──────────────────────────────────────────────────────────────────────
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: democredit-api
+    restart: on-failure
+    ports:
+      - "${PORT:-3000}:3000"
+    # Read all secrets from the .env file on the host
+    env_file:
+      - .env
+    environment:
+      # Override DB_HOST so it points to the MySQL service, not localhost
+      DB_HOST: mysql
+      DB_PORT: 3306
+      # Skip TypeScript type-checking at runtime for faster startup
+      TS_NODE_TRANSPILE_ONLY: "true"
+    depends_on:
+      mysql:
+        condition: service_healthy   # API waits until MySQL passes its healthcheck
+
+volumes:
+  mysql_data:
+    name: democredit-mysql-data

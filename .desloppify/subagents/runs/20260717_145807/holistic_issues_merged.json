@@ -1,0 +1,1448 @@
+{
+  "assessments": {
+    "ai_generated_debt": 50.0,
+    "api_surface_coherence": 70.0,
+    "authorization_consistency": 60.0,
+    "contract_coherence": 72.0,
+    "cross_module_architecture": 75.0,
+    "design_coherence": 90.0,
+    "error_consistency": 80.0,
+    "high_level_elegance": 78.0,
+    "incomplete_migration": 80.0,
+    "initialization_coupling": 70.0,
+    "logic_clarity": 90.0,
+    "low_level_elegance": 80.0,
+    "mid_level_elegance": 78.0,
+    "naming_quality": 92.0,
+    "package_organization": 80.0,
+    "test_strategy": 40.0,
+    "type_safety": 70.0
+  },
+  "dimension_notes": {
+    "cross_module_architecture": {
+      "evidence": [
+        "The codebase has a clean layered architecture with modules \u00e2\u2020\u2019 shared \u00e2\u2020\u2019 config dependency direction as the intent, and DI container providing composition. The primary defect is a repeated direction violation: two shared-layer files (auth.middleware.ts and express.d.ts) import AuthPayload from the auth module, creating a bidirectional dependency between shared/ and modules/auth/. This can be resolved by moving AuthPayload to a shared type definition (e.g., shared/types/auth.ts). The DI container hub and import-time database connection are standard patterns for a Node.js/Express codebase of this size but contribute to blast radius and boot-order coupling."
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor",
+      "confidence": "high",
+      "issues_preventing_higher_score": ""
+    },
+    "high_level_elegance": {
+      "evidence": [
+        "The codebase has a clear, intentional architecture with well-decomposed domain modules and consistent patterns. The module structure (users, wallets, ledger, transfers) maps well to domain capabilities. However, the adjutor module breaks the established structural pattern, and the orphaned server.ts creates ambiguity about entry-point ownership."
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor",
+      "confidence": "high",
+      "issues_preventing_higher_score": ""
+    },
+    "error_consistency": {
+      "evidence": [
+        "Most error handling uses AppError subclasses (NotFoundError, ForbiddenError) processed by centralized middleware, but one controller manually writes a 404 JSON response bypassing the error pipeline."
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor",
+      "confidence": "high",
+      "issues_preventing_higher_score": ""
+    },
+    "naming_quality": {
+      "evidence": [
+        "Excellent naming quality across the codebase. Functions, variables, types, and classes consistently communicate intent using descriptive, domain-aligned names. Minor redundant naming in one type alias."
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor",
+      "confidence": "high",
+      "issues_preventing_higher_score": ""
+    },
+    "low_level_elegance": {
+      "evidence": [
+        "Strong low-level elegance across the codebase. Functions are concise, focused, and direct. Control flow is intention-revealing. State mutation is explicit and bounded. Extraction level is balanced. Minor observations noted but no significant defects."
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor",
+      "confidence": "high",
+      "issues_preventing_higher_score": ""
+    },
+    "mid_level_elegance": {
+      "evidence": [
+        "The codebase has strong structural consistency \u00e2\u20ac\u201d every module follows the same controller\u00e2\u2020\u2019service\u00e2\u2020\u2019repository layering, dependency injection via tsyringe is used uniformly, and error propagation follows a predictable throw-in-service/catch-in-controller/forward-via-next pattern. However, there are several type-unsafe integration seams where Express's Request type is augmented without declarations, one module bypasses the established layering pattern, and the boilerplate catch-forward pattern across controllers suggests an opportunity to centralize this at the middleware layer."
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor",
+      "confidence": "high",
+      "issues_preventing_higher_score": ""
+    },
+    "test_strategy": {
+      "evidence": [
+        "Unit tests exist for 5 services with solid quality, but critical gaps remain: zero integration tests, no middleware tests (including auth), no controller tests, and no ledger service tests. The existing tests are well-structured with good mock patterns and meaningful assertions, but the coverage footprint is narrow relative to the codebase surface."
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor",
+      "confidence": "high",
+      "issues_preventing_higher_score": ""
+    },
+    "api_surface_coherence": {
+      "evidence": [
+        "The API surface is small, well-structured, and mostly coherent. Success responses consistently use `{ data: T }` with correct HTTP status codes, route naming follows RESTful conventions under `/api/v1/`, and each module follows the same controller pattern (try/catch with `next(error)`). However, there are meaningful inconsistencies in auth middleware application, error response handling, and a redundant endpoint that undermines the API contract."
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor",
+      "confidence": "high",
+      "issues_preventing_higher_score": ""
+    },
+    "authorization_consistency": {
+      "evidence": [
+        "The codebase has a solid auth middleware foundation and correct ownership checks on the write path (transfers.create) and wallet-scoped reads (wallets.getById, ledger.listEntries). Two read paths lack ownership gates: GET /transfers/:id and GET /users/:id allow any authenticated user to fetch records belonging to others. The users module also uses a different auth application pattern (per-route vs router-level), which is functionally fine but increases the chance of a new route being added without auth."
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor",
+      "confidence": "high",
+      "issues_preventing_higher_score": ""
+    },
+    "ai_generated_debt": {
+      "evidence": [
+        "Moderate AI-generated debt: identical controller boilerplate, unnecessary try-catch re-throws, pass-through service methods, and verbose restating comments concentrated in a few files. The codebase is small enough that these patterns don't create major maintenance burden, but they signal mechanical generation rather than intentional craft."
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor",
+      "confidence": "high",
+      "issues_preventing_higher_score": ""
+    },
+    "incomplete_migration": {
+      "evidence": [
+        "knexfile.ts re-implements database connection defaults independently from the centralized zod-validated env config. DI container uses mixed registration patterns (token-based for services, class-based for controllers) indicating an incomplete migration to the token system."
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor",
+      "confidence": "high",
+      "issues_preventing_higher_score": ""
+    },
+    "package_organization": {
+      "evidence": [
+        "Well-organized small project with clean top-level separation and consistent module structure. Minor issues: adjutor module is structurally thinner than siblings (justified as an external service client), and a few empty placeholder directories exist."
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor",
+      "confidence": "high",
+      "issues_preventing_higher_score": ""
+    },
+    "initialization_coupling": {
+      "evidence": [
+        "DI container setup is clean and well-ordered, but module-scope resolution in route files creates a fragile boot-order dependency with the container registration file. Env validation and DB pool creation at import time add additional coupling."
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor",
+      "confidence": "high",
+      "issues_preventing_higher_score": ""
+    },
+    "design_coherence": {
+      "evidence": [
+        "Overall strong design coherence with consistent layering, error handling, and DI patterns. Minor deviations include AuthService bypassing UsersService to call repositories directly, one controller manually constructing error responses, and inconsistent DTO extraction between controllers."
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor",
+      "confidence": "high",
+      "issues_preventing_higher_score": ""
+    },
+    "contract_coherence": {
+      "evidence": [
+        "Most interface contracts match implementations cleanly, but a few genuine mismatches exist: a misnamed parameter contradicting its function's semantic contract, a DTO comment that contradicts actual usage, and type assertions that mask real type boundaries."
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor",
+      "confidence": "high",
+      "issues_preventing_higher_score": ""
+    },
+    "logic_clarity": {
+      "evidence": [
+        "The codebase demonstrates consistently strong logic clarity across all 56 source files. Control flow is linear and readable throughout. Early returns are used appropriately for guard clauses in every service (NotFoundError for null checks, ForbiddenError for permission checks, ValidationError for input validation). No deeply nested logic exists \u00e2\u20ac\u201d the deepest nesting is the transaction block in transfers.service.ts which is inherent to the problem domain and well-commented. Boolean expressions are clear and straightforward. No dead code paths, no always-true/always-false conditions, no redundant null checks, and no async functions that never await were found. Controllers follow a uniform try/catch + next(error) pattern. The wallet locking sort in transfers.service.ts:47 uses .sort() without a comparator but is correctly documented as a deadlock-prevention pattern. The retry logic in shared/utils/retry.ts has clean loop control with proper break/throw semantics. Overall: control flow is provably correct and intention-revealing throughout."
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor",
+      "confidence": "high",
+      "issues_preventing_higher_score": ""
+    },
+    "type_safety": {
+      "evidence": [
+        "Strong TypeScript discipline overall (strict mode, interface-based contracts, Zod runtime validation), but undermined by unsafe `as` casts in auth boundary and unchecked repository row casts that bypass TypeScript's safety net."
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor",
+      "confidence": "high",
+      "issues_preventing_higher_score": ""
+    }
+  },
+  "dimension_judgment": {
+    "cross_module_architecture": {
+      "dimension_character": "The codebase has a clean layered architecture with modules \u00e2\u2020\u2019 shared \u00e2\u2020\u2019 config dependency direction as the intent, and DI container providing composition. The primary defect is a repeated direction violation: two shared-layer files (auth.middleware.ts and express.d.ts) import AuthPayload from the auth module, creating a bidirectional dependency between shared/ and modules/auth/. This can be resolved by moving AuthPayload to a shared type definition (e.g., shared/types/auth.ts). The DI container hub and import-time database connection are standard patterns for a Node.js/Express codebase of this size but contribute to blast radius and boot-order coupling.",
+      "score_rationale": "Score of 75 reflects the assessment of cross_module_architecture based on the findings and summary."
+    },
+    "high_level_elegance": {
+      "dimension_character": "The codebase has a clear, intentional architecture with well-decomposed domain modules and consistent patterns. The module structure (users, wallets, ledger, transfers) maps well to domain capabilities. However, the adjutor module breaks the established structural pattern, and the orphaned server.ts creates ambiguity about entry-point ownership.",
+      "score_rationale": "Score of 78 reflects the assessment of high_level_elegance based on the findings and summary."
+    },
+    "error_consistency": {
+      "dimension_character": "Error handling is largely consistent across the codebase, with most services throwing AppError subclasses that are formatted uniformly by the error middleware. The wallets controller is the sole outlier, manually constructing a 404 response that produces a different shape than every other error path. This inconsistency is isolated but breaks the centralized error contract.",
+      "score_rationale": "Score of 80 reflects the assessment of error_consistency based on the findings and summary."
+    },
+    "naming_quality": {
+      "dimension_character": "Excellent naming quality across the codebase. Functions, variables, types, and classes consistently communicate intent using descriptive, domain-aligned names. Minor redundant naming in one type alias.",
+      "score_rationale": "Score of 92 reflects excellent naming across the codebase with only minor redundancy in adjutor type names."
+    },
+    "low_level_elegance": {
+      "dimension_character": "Strong low-level elegance across the codebase. Functions are concise, focused, and direct. Control flow is intention-revealing. State mutation is explicit and bounded. Extraction level is balanced. Minor observations noted but no significant defects.",
+      "score_rationale": "Score of 80 reflects the assessment of low_level_elegance based on the findings and summary."
+    },
+    "mid_level_elegance": {
+      "dimension_character": "The codebase has strong structural consistency \u00e2\u20ac\u201d every module follows the same controller\u00e2\u2020\u2019service\u00e2\u2020\u2019repository layering, dependency injection via tsyringe is used uniformly, and error propagation follows a predictable throw-in-service/catch-in-controller/forward-via-next pattern. However, there are several type-unsafe integration seams where Express's Request type is augmented without declarations, one module bypasses the established layering pattern, and the boilerplate catch-forward pattern across controllers suggests an opportunity to centralize this at the middleware layer.",
+      "score_rationale": "Score of 78 reflects the assessment of mid_level_elegance based on the findings and summary."
+    },
+    "test_strategy": {
+      "dimension_character": "Unit tests exist for 5 services with solid quality, but critical gaps remain: zero integration tests, no middleware tests (including auth), no controller tests, and no ledger service tests. The existing tests are well-structured with good mock patterns and meaningful assertions, but the coverage footprint is narrow relative to the codebase surface.",
+      "score_rationale": "Score of 40 reflects the assessment of test_strategy based on the findings and summary."
+    },
+    "api_surface_coherence": {
+      "dimension_character": "The API surface is small, well-structured, and mostly coherent. Success responses consistently use `{ data: T }` with correct HTTP status codes, route naming follows RESTful conventions under `/api/v1/`, and each module follows the same controller pattern (try/catch with `next(error)`). However, there are meaningful inconsistencies in auth middleware application, error response handling, and a redundant endpoint that undermines the API contract.",
+      "score_rationale": "Score of 70 reflects the assessment of api_surface_coherence based on the findings and summary."
+    },
+    "authorization_consistency": {
+      "dimension_character": "The codebase has a solid auth middleware foundation and correct ownership checks on the write path (transfers.create) and wallet-scoped reads (wallets.getById, ledger.listEntries). Two read paths lack ownership gates: GET /transfers/:id and GET /users/:id allow any authenticated user to fetch records belonging to others. The users module also uses a different auth application pattern (per-route vs router-level), which is functionally fine but increases the chance of a new route being added without auth.",
+      "score_rationale": "Score of 60 reflects the assessment of authorization_consistency based on the findings and summary."
+    },
+    "ai_generated_debt": {
+      "dimension_character": "Moderate AI-generated debt: identical controller boilerplate, unnecessary try-catch re-throws, pass-through service methods, and verbose restating comments concentrated in a few files. The codebase is small enough that these patterns don't create major maintenance burden, but they signal mechanical generation rather than intentional craft.",
+      "score_rationale": "Score of 50 reflects the assessment of ai_generated_debt based on the findings and summary."
+    },
+    "incomplete_migration": {
+      "dimension_character": "The codebase shows two clear incomplete migration patterns: knexfile.ts bypasses the centralized env validation by reading process.env directly with duplicated defaults, and the DI container mixes token-based service registration with class-based controller registration. Both patterns indicate a migration was started but never completed, though the functional impact is limited since the duplicated defaults currently match.",
+      "score_rationale": "Score of 80 reflects the assessment of incomplete_migration based on the findings and summary."
+    },
+    "package_organization": {
+      "dimension_character": "Well-organized small project with clean top-level separation and consistent module structure. Minor issues: adjutor module is structurally thinner than siblings (justified as an external service client), and a few empty placeholder directories exist.",
+      "score_rationale": "Score of 80 reflects the assessment of package_organization based on the findings and summary."
+    },
+    "initialization_coupling": {
+      "dimension_character": "DI container setup is clean and well-ordered, but module-scope resolution in route files creates a fragile boot-order dependency with the container registration file. Env validation and DB pool creation at import time add additional coupling.",
+      "score_rationale": "Score of 70 reflects the assessment of initialization_coupling based on the findings and summary."
+    },
+    "design_coherence": {
+      "dimension_character": "The codebase demonstrates strong design coherence with consistent layered architecture, DI patterns, and error handling contracts across modules. A few isolated deviations exist: AuthService reaches into sibling repositories instead of going through UsersService, one controller manually constructs a 404 response bypassing the error middleware, and LedgerController re-extracts query params instead of using the validated request object. These are minor breaks in an otherwise well-structured design.",
+      "score_rationale": "Score of 90 reflects the assessment of design_coherence based on the findings and summary."
+    },
+    "contract_coherence": {
+      "dimension_character": "Most interface contracts match implementations cleanly, but a few genuine mismatches exist: a misnamed parameter contradicting its function's semantic contract, a DTO comment that contradicts actual usage, and type assertions that mask real type boundaries.",
+      "score_rationale": "Score of 72 reflects the assessment of contract_coherence based on the findings and summary."
+    },
+    "logic_clarity": {
+      "dimension_character": "The codebase demonstrates consistently strong logic clarity across all 56 source files. Control flow is linear and readable throughout. Early returns are used appropriately for guard clauses in every service (NotFoundError for null checks, ForbiddenError for permission checks, ValidationError for input validation). No deeply nested logic exists \u00e2\u20ac\u201d the deepest nesting is the transaction block in transfers.service.ts which is inherent to the problem domain and well-commented. Boolean expressions are clear and straightforward. No dead code paths, no always-true/always-false conditions, no redundant null checks, and no async functions that never await were found. Controllers follow a uniform try/catch + next(error) pattern. The wallet locking sort in transfers.service.ts:47 uses .sort() without a comparator but is correctly documented as a deadlock-prevention pattern. The retry logic in shared/utils/retry.ts has clean loop control with proper break/throw semantics. Overall: control flow is provably correct and intention-revealing throughout.",
+      "score_rationale": "Score of 90 reflects the assessment of logic_clarity based on the findings and summary."
+    },
+    "type_safety": {
+      "dimension_character": "Strong TypeScript discipline overall (strict mode, interface-based contracts, Zod runtime validation), but undermined by unsafe `as` casts in auth boundary and unchecked repository row casts that bypass TypeScript's safety net.",
+      "score_rationale": "Score of 70 reflects the assessment of type_safety based on the findings and summary."
+    }
+  },
+  "issues": [
+    {
+      "dimension": "cross_module_architecture",
+      "identifier": "dim-1",
+      "summary": "Shared layer imports from module layer, creating a bidirectional dependency between shared/ and modules/auth/. The middleware (a shared infrastructure concern) depends on a domain module's type definition (AuthPayload from auth.types.ts). This means the shared layer cannot be consumed by modules without also pulling in the auth module, violating the intended unidirectional flow modules \u00e2\u2020\u2019 shared.",
+      "confidence": "medium",
+      "suggestion": "Fix: Shared layer imports from module layer, creating a bidirectional dependency between shared/ and modules/auth/. The middleware (a shared infrastructure concern) depends on a domain module's type definition (AuthPayload from auth.types.ts). This means the shared layer cannot be consumed by modules without also pulling in the auth module, violating the intended unidirectional flow modules \u00e2\u2020\u2019 shared.",
+      "related_files": [
+        "src/shared/middleware/auth.middleware.ts"
+      ],
+      "evidence": [
+        "auth.middleware.ts:5 imports AuthPayload from ../../modules/auth/auth.types. The coupling matrix confirms bidirectional edges: auth/ \u00e2\u2020\u2019 shared/middleware (auth middleware usage in routes) AND shared/middleware \u00e2\u2020\u2019 auth/ (type import), forming a directory-level cycle."
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "cross_module_architecture",
+      "identifier": "dim-2",
+      "summary": "Global Express type augmentation in shared/types/ imports AuthPayload from modules/auth/auth.types, repeating the same shared \u00e2\u2020\u2019 module direction violation seen in auth.middleware.ts. Two separate files in the shared layer now depend on the auth module's type definition, making this a repeated pattern rather than an isolated exception.",
+      "confidence": "medium",
+      "suggestion": "Fix: Global Express type augmentation in shared/types/ imports AuthPayload from modules/auth/auth.types, repeating the same shared \u00e2\u2020\u2019 module direction violation seen in auth.middleware.ts. Two separate files in the shared layer now depend on the auth module's type definition, making this a repeated pattern rather than an isolated exception.",
+      "related_files": [
+        "src/shared/types/express.d.ts"
+      ],
+      "evidence": [
+        "express.d.ts:1 imports AuthPayload from ../../modules/auth/auth.types to augment the global Express.Request interface. This creates the same shared/ \u00e2\u2020\u2019 modules/auth/ direction violation as auth.middleware.ts:5."
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "cross_module_architecture",
+      "identifier": "dim-3",
+      "summary": "DI composition root imports all 6 domain modules (adjutor, auth, users, wallets, ledger, transfers) plus shared utilities, creating a single hub with fan-out to the entire codebase. Any constructor signature change across any module requires touching this file. While expected for a DI container, the hub concentrates blast radius \u00e2\u20ac\u201d a restructuring of any module's dependencies forces a container edit.",
+      "confidence": "low",
+      "suggestion": "Fix: DI composition root imports all 6 domain modules (adjutor, auth, users, wallets, ledger, transfers) plus shared utilities, creating a single hub with fan-out to the entire codebase. Any constructor signature change across any module requires touching this file. While expected for a DI container, the hub concentrates blast radius \u00e2\u20ac\u201d a restructuring of any module's dependencies forces a container edit.",
+      "related_files": [
+        "src/config/container.ts"
+      ],
+      "evidence": [
+        "container.ts imports from all 6 modules (lines 5-30), registering 12 container bindings. The coupling matrix shows config/ \u00e2\u2020\u2019 all module directories with 2-4 imports each (total: 21 cross-directory edges from config/ alone)."
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "cross_module_architecture",
+      "identifier": "dim-4",
+      "summary": "Database connection pool is created at module scope (import-time side effect) via knex(createKnexConfig()). Any module that imports database.ts \u00e2\u20ac\u201d or any module that transitively imports it through the DI container \u00e2\u20ac\u201d triggers a live database connection attempt at import time, not at first use. This creates a boot-order coupling where env.ts must be parsed before database.ts is imported.",
+      "confidence": "low",
+      "suggestion": "Fix: Database connection pool is created at module scope (import-time side effect) via knex(createKnexConfig()). Any module that imports database.ts \u00e2\u20ac\u201d or any module that transitively imports it through the DI container \u00e2\u20ac\u201d triggers a live database connection attempt at import time, not at first use. This creates a boot-order coupling where env.ts must be parsed before database.ts is imported.",
+      "related_files": [
+        "src/config/database.ts"
+      ],
+      "evidence": [
+        "database.ts:27 executes `const db = knex(createKnexConfig())` at module scope. This runs immediately on first import, before any explicit connection call. The Knex connection pool (min: 2, max: 10) is allocated at import time."
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "high_level_elegance",
+      "identifier": "high_level_elegance::adjutor_module_structural_divergence",
+      "summary": "The adjutor module contains only adjutor.types.ts and adjutor.service.ts \u00e2\u20ac\u201d it lacks a controller, routes, and validator that every other module (auth, users, wallets, ledger, transfers) includes. This structural inconsistency blurs ownership: a new engineer cannot predict what files belong in a module. The adjutor module is a pure service wrapper with no HTTP surface, yet it lives alongside full-stack domain modules.",
+      "confidence": "medium",
+      "suggestion": "Fix: The adjutor module contains only adjutor.types.ts and adjutor.service.ts \u00e2\u20ac\u201d it lacks a controller, routes, and validator that every other module (auth, users, wallets, ledger, transfers) includes. This structural inconsistency blurs ownership: a new engineer cannot predict what files belong in a module. The adjutor module is a pure service wrapper with no HTTP surface, yet it lives alongside full-stack domain modules.",
+      "related_files": [
+        "src/modules/adjutor/"
+      ],
+      "evidence": [
+        "adjutor/ has 2 files; users/, wallets/, ledger/, transfers/ each have 6 files",
+        "adjutor.service.ts is the sole implementation of IAdjutorService \u00e2\u20ac\u201d no controller or routes",
+        "All other modules follow the pattern: types, repository, service, controller, routes, validator"
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "high_level_elegance",
+      "identifier": "high_level_elegance::server_ts_ownership_ambiguity",
+      "summary": "server.ts is marked orphaned (zero importers) by the scanner, yet it is clearly the application entry point containing boot logic, graceful shutdown, and process safety nets. This ambiguity between app.ts (Express app setup) and server.ts (boot orchestration) creates unclear ownership: server.ts owns runtime lifecycle but has no import relationship with app.ts beyond importing it as a default.",
+      "confidence": "low",
+      "suggestion": "Fix: server.ts is marked orphaned (zero importers) by the scanner, yet it is clearly the application entry point containing boot logic, graceful shutdown, and process safety nets. This ambiguity between app.ts (Express app setup) and server.ts (boot orchestration) creates unclear ownership: server.ts owns runtime lifecycle but has no import relationship with app.ts beyond importing it as a default.",
+      "related_files": [
+        "src/server.ts"
+      ],
+      "evidence": [
+        "server.ts imports app.ts as default \u00e2\u20ac\u201d one-way dependency, no coupling issue",
+        "server.ts contains SHUTDOWN_TIMEOUT_MS constant and boot() function \u00e2\u20ac\u201d core lifecycle logic",
+        "app.ts is the Express app definition; server.ts is the process manager \u00e2\u20ac\u201d roles are split but not clearly named"
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "high_level_elegance",
+      "identifier": "high_level_elegance::database_directory_isolation",
+      "summary": "The src/database/ directory contains migrations and seeds but sits alongside config/ and shared/ without a clear structural relationship to the database configuration in config/database.ts. The migration directory path is hardcoded relative to the project root in the knex config, not co-located with the config that defines the connection.",
+      "confidence": "low",
+      "suggestion": "Fix: The src/database/ directory contains migrations and seeds but sits alongside config/ and shared/ without a clear structural relationship to the database configuration in config/database.ts. The migration directory path is hardcoded relative to the project root in the knex config, not co-located with the config that defines the connection.",
+      "related_files": [
+        "src/database/"
+      ],
+      "evidence": [
+        "src/database/ has only migrations/ and seeds/ subdirectories",
+        "config/database.ts defines migration directory as 'src/database/migrations' (root-relative)",
+        "No other module directory has a peer relationship with database/ \u00e2\u20ac\u201d it is an island"
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "convention_outlier",
+      "identifier": "conv-001",
+      "summary": "Every repository interface names its record-creation method `create()`, but ILedgerRepository uses `insert()`. This breaks the cross-module naming contract for the same semantic operation.",
+      "confidence": "medium",
+      "suggestion": "Fix: Every repository interface names its record-creation method `create()`, but ILedgerRepository uses `insert()`. This breaks the cross-module naming contract for the same semantic operation.",
+      "related_files": [
+        "src/modules/ledger/ledger.types.ts",
+        "src/modules/transfers/transfers.types.ts",
+        "src/modules/users/users.types.ts",
+        "src/modules/wallets/wallets.types.ts"
+      ],
+      "evidence": [
+        "insert(entry: CreateLedgerEntryDTO, trx: Knex.Transaction): Promise<LedgerEntry>;",
+        "create(data: CreateTransferDTO, trx: Knex.Transaction): Promise<Transfer>;",
+        "create(data: CreateUserDTO, trx?: Knex.Transaction): Promise<User>;",
+        "create(data: CreateWalletDTO, trx?: Knex.Transaction): Promise<Wallet>;"
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "convention_outlier",
+      "identifier": "conv-002",
+      "summary": "Most sibling route files apply auth at the router level via `router.use(authMiddleware)`, but users.routes.ts applies it per-route. The unauthenticated POST / route is intentional (registration), but the inconsistent mechanism makes the auth boundary harder to reason about at a glance.",
+      "confidence": "medium",
+      "suggestion": "Fix: Most sibling route files apply auth at the router level via `router.use(authMiddleware)`, but users.routes.ts applies it per-route. The unauthenticated POST / route is intentional (registration), but the inconsistent mechanism makes the auth boundary harder to reason about at a glance.",
+      "related_files": [
+        "src/modules/users/users.routes.ts",
+        "src/modules/wallets/wallets.routes.ts",
+        "src/modules/ledger/ledger.routes.ts",
+        "src/modules/transfers/transfers.routes.ts"
+      ],
+      "evidence": [
+        "router.post('/', validate(createUserSchema), controller.create);",
+        "router.get('/:id', authMiddleware, validate(userIdSchema, 'params'), controller.getById);",
+        "router.use(authMiddleware);",
+        "router.use(authMiddleware);",
+        "router.use(authMiddleware);"
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "convention_outlier",
+      "identifier": "conv-003",
+      "summary": "UsersRepository explicitly specifies selected columns in every query, while WalletsRepository and TransfersRepository rely on implicit select-all (no .select() call). Both approaches work, but mixing them within the same codebase creates an inconsistent data-access style.",
+      "confidence": "low",
+      "suggestion": "Fix: UsersRepository explicitly specifies selected columns in every query, while WalletsRepository and TransfersRepository rely on implicit select-all (no .select() call). Both approaches work, but mixing them within the same codebase creates an inconsistent data-access style.",
+      "related_files": [
+        "src/modules/users/users.repository.ts",
+        "src/modules/wallets/wallets.repository.ts",
+        "src/modules/transfers/transfers.repository.ts"
+      ],
+      "evidence": [
+        "const row = await this.db('users').select('id', 'email', 'created_at', 'updated_at').where({ id }).first();",
+        "const row = await (trx ?? this.db)('wallets').where({ id }).first();",
+        "const row = await this.db('transfers').where({ id }).first();"
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "convention_outlier",
+      "identifier": "conv-004",
+      "summary": "Every domain module (auth, users, wallets, ledger, transfers) follows a 5-6 file pattern: controller, repository, routes, service, types, validator. The adjutor module has only service + types. While this is architecturally justified (it is an external HTTP client, not a domain entity), it is the only module that breaks the structural template.",
+      "confidence": "low",
+      "suggestion": "Fix: Every domain module (auth, users, wallets, ledger, transfers) follows a 5-6 file pattern: controller, repository, routes, service, types, validator. The adjutor module has only service + types. While this is architecturally justified (it is an external HTTP client, not a domain entity), it is the only module that breaks the structural template.",
+      "related_files": [
+        "src/modules/adjutor/",
+        "src/modules/auth/",
+        "src/modules/users/"
+      ],
+      "evidence": [
+        "Files: adjutor.service.ts, adjutor.types.ts (2 files)",
+        "Files: auth.controller.ts, auth.routes.ts, auth.service.ts, auth.types.ts, auth.validator.ts (5 files)",
+        "Files: users.controller.ts, users.repository.ts, users.routes.ts, users.service.ts, users.types.ts, users.validator.ts (6 files)"
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "error_consistency",
+      "identifier": "err-1",
+      "summary": "getMyWallet returns a raw 404 JSON response instead of throwing NotFoundError, bypassing centralized error middleware and producing a different response shape (missing 'code' field) than every other error in the codebase.",
+      "confidence": "medium",
+      "suggestion": "Replace the manual 404 response with: throw new NotFoundError('No wallet found for this user'). The error middleware will format it consistently with all other errors.",
+      "related_files": [
+        "src/modules/wallets/wallets.controller.ts"
+      ],
+      "evidence": [
+        "The only controller that manually writes an error response (res.status(404).json({ message: 'No wallet found for this user' })) instead of throwing an AppError subclass. Every other not-found case across services (users.service.ts:17, wallets.service.ts:19, transfers.service.ts:52-53, transfers.service.ts:96, ledger.service.ts:17) throws NotFoundError, which the error middleware formats consistently with { message, code }."
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "error_consistency",
+      "identifier": "err-2",
+      "summary": "fetchKarma throws a bare Error for 5xx responses used as a retry signal, which is fine for internal retry logic but could leak a non-AppError to callers if withRetry's error is somehow not caught upstream.",
+      "confidence": "low",
+      "suggestion": "No change required \u2014 the wrapping is correct. Consider a named RetryableError class if the pattern is reused elsewhere, but the current code is functionally sound.",
+      "related_files": [
+        "src/modules/adjutor/adjutor.service.ts"
+      ],
+      "evidence": [
+        "throw new Error(`Adjutor server error: ${response.status}`) at line 101 is caught by withRetry, and the eventual catch in isBlacklisted (line 45-52) wraps it into AppError(503). The flow is correct, but the internal bare Error is a domain-specific HTTP status error that would be better expressed as a transient error marker rather than a plain Error."
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "naming_quality",
+      "identifier": "dim-1",
+      "summary": "KarmaKarmaType has redundant Karma prefix creating 'karma type karma type' when read in context",
+      "confidence": "medium",
+      "suggestion": "Rename to KarmaType to eliminate redundancy. The enclosing interface already provides the Karma context.",
+      "related_files": [
+        "src/modules/adjutor/adjutor.types.ts"
+      ],
+      "evidence": [
+        "Redundant 'Karma' repetition \u2014 type name doubles the domain qualifier. A field named karma_type: KarmaKarmaType reads as 'karma type karma type'."
+      ],
+      "impact_scope": "local",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "naming_quality",
+      "identifier": "dim-2",
+      "summary": "KarmaIdentityType has redundant Karma prefix creating 'karma identity type karma identity type' when read in context",
+      "confidence": "medium",
+      "suggestion": "Rename to IdentityType for the same reason as KarmaKarmaType.",
+      "related_files": [
+        "src/modules/adjutor/adjutor.types.ts"
+      ],
+      "evidence": [
+        "Similarly redundant with the Karma prefix when used inside KarmaData as karma_identity_type: KarmaIdentityType."
+      ],
+      "impact_scope": "local",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "low_level_elegance",
+      "identifier": "dim-1",
+      "summary": "debit/credit methods use parseFloat() for decimal balance arithmetic (parseFloat(amount) passed to Knex increment/decrement). The balance column stores 4-decimal-place strings ('0.0000'). While parseFloat is adequate for 4-decimal-place amounts, the string-based balance format suggests the schema is designed for precise decimal arithmetic, yet the JS side uses IEEE-754 floating point. For a financial ledger, this creates a subtle mismatch between the storage precision (string, 4 decimals) and the runtime precision (float64). Not a bug given the 4-decimal constraint, but the type system and storage contract imply higher precision than the arithmetic delivers.",
+      "confidence": "low",
+      "suggestion": "No code change needed for correctness at 4 decimals, but if precision requirements tighten, switch to a decimal arithmetic library or integer-based arithmetic (store cents/smallest-unit). For now this is acceptable.",
+      "related_files": [
+        "src/modules/wallets/wallets.repository.ts"
+      ],
+      "evidence": [
+        "debit/credit methods use parseFloat() for decimal balance arithmetic while the schema stores 4-decimal-place strings, creating a subtle mismatch between storage precision and runtime precision."
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "low_level_elegance",
+      "identifier": "dim-2",
+      "summary": "Funds check compares parseFloat(fromWallet.balance) < amount where amount is already a parsed float from line 35. The wallet balance is a string from the DB. This means balance comparison happens in float64 space. The same parseFloat pattern appears in debit/credit (repository line 45, 49). Consistent use of parseFloat throughout the transfer path, but if string-based comparison (fromWallet.balance < data.amount) would be more precise for 4-decimal strings, the current approach relies on float being 'close enough' for the fixed decimal format.",
+      "confidence": "low",
+      "suggestion": "Acceptable for 4-decimal-place amounts. If precision becomes critical, use BigNumber or compare as strings after normalizing decimal places.",
+      "related_files": [
+        "src/modules/transfers/transfers.service.ts"
+      ],
+      "evidence": [
+        "Funds check compares parseFloat(fromWallet.balance) < amount where both operands are floats parsed from string DB values."
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "mid_level_elegance",
+      "identifier": "mid-001",
+      "summary": "authMiddleware sets `req.user = payload` and idempotencyMiddleware sets `req.idempotencyKey = key` without augmenting Express's Request type. Controllers then access `req.user!.sub` and `req.idempotencyKey as string` with non-null assertions and type casts to work around the missing types. This creates a type-unsafe integration seam \u00e2\u20ac\u201d the contract between middleware and controllers exists only in convention, not in TypeScript's type system. A single `declare global { namespace Express { interface Request { user?: AuthPayload; idempotencyKey?: string; } } }` in a .d.ts file would make this seam explicit and type-safe.",
+      "confidence": "medium",
+      "suggestion": "Fix: authMiddleware sets `req.user = payload` and idempotencyMiddleware sets `req.idempotencyKey = key` without augmenting Express's Request type. Controllers then access `req.user!.sub` and `req.idempotencyKey as string` with non-null assertions and type casts to work around the missing types. This creates a type-unsafe integration seam \u00e2\u20ac\u201d the contract between middleware and controllers exists only in convention, not in TypeScript's type system. A single `declare global { namespace Express { interface Request { user?: AuthPayload; idempotencyKey?: string; } } }` in a .d.ts file would make this seam explicit and type-safe.",
+      "related_files": [
+        "src/shared/middleware/auth.middleware.ts"
+      ],
+      "evidence": [
+        "auth.middleware.ts:20 \u00e2\u20ac\u201d `req.user = payload;` with no type augmentation",
+        "idempotency.middleware.ts:11 \u00e2\u20ac\u201d `req.idempotencyKey = key;` with no type augmentation",
+        "transfers.controller.ts:13 \u00e2\u20ac\u201d `req.idempotencyKey as string` cast",
+        "transfers.controller.ts:14 \u00e2\u20ac\u201d `req.user!.sub` non-null assertion",
+        "wallets.controller.ts:13 \u00e2\u20ac\u201d `req.user!.sub` non-null assertion",
+        "ledger.controller.ts:17 \u00e2\u20ac\u201d `req.user!.sub` non-null assertion"
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "mid_level_elegance",
+      "identifier": "mid-002",
+      "summary": "Three of four authenticated route files (wallets, ledger, transfers) apply authMiddleware via `router.use(authMiddleware)` at the top, protecting all routes. The users module instead applies it per-route: the POST / (register) is unprotected while GET /:id uses `authMiddleware` inline. While this may be intentional for the registration endpoint, the inconsistent placement makes it unclear which routes are authenticated at a glance. The auth module similarly has no authMiddleware on its routes, which is correct for login/register, but the pattern divergence across siblings requires reading each file carefully.",
+      "confidence": "low",
+      "suggestion": "Fix: Three of four authenticated route files (wallets, ledger, transfers) apply authMiddleware via `router.use(authMiddleware)` at the top, protecting all routes. The users module instead applies it per-route: the POST / (register) is unprotected while GET /:id uses `authMiddleware` inline. While this may be intentional for the registration endpoint, the inconsistent placement makes it unclear which routes are authenticated at a glance. The auth module similarly has no authMiddleware on its routes, which is correct for login/register, but the pattern divergence across siblings requires reading each file carefully.",
+      "related_files": [
+        "src/modules/users/users.routes.ts"
+      ],
+      "evidence": [
+        "wallets.routes.ts:11 \u00e2\u20ac\u201d `router.use(authMiddleware)` (all routes protected)",
+        "ledger.routes.ts:11 \u00e2\u20ac\u201d `router.use(authMiddleware)` (all routes protected)",
+        "transfers.routes.ts:12 \u00e2\u20ac\u201d `router.use(authMiddleware)` (all routes protected)",
+        "users.routes.ts:12 \u00e2\u20ac\u201d `authMiddleware` applied inline on GET /:id only",
+        "auth.routes.ts \u00e2\u20ac\u201d no authMiddleware (correct for login/register)"
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "mid_level_elegance",
+      "identifier": "mid-003",
+      "summary": "AuthService injects the raw Knex database instance and calls `this.db.transaction()` directly to create a user and wallet atomically. Every other service in the codebase delegates data access to its repository and never touches the database directly. This bypass creates an inconsistency in the integration seam: AuthService is both a business-logic service and a data-access orchestrator. The transaction logic (creating user + wallet atomically) could live in a repository method or a dedicated orchestration function, keeping the service layer consistent.",
+      "confidence": "low",
+      "suggestion": "Fix: AuthService injects the raw Knex database instance and calls `this.db.transaction()` directly to create a user and wallet atomically. Every other service in the codebase delegates data access to its repository and never touches the database directly. This bypass creates an inconsistency in the integration seam: AuthService is both a business-logic service and a data-access orchestrator. The transaction logic (creating user + wallet atomically) could live in a repository method or a dedicated orchestration function, keeping the service layer consistent.",
+      "related_files": [
+        "src/modules/auth/auth.service.ts"
+      ],
+      "evidence": [
+        "auth.service.ts:26 \u00e2\u20ac\u201d `@inject(TOKENS.Database) private readonly db: Knex`",
+        "auth.service.ts:54 \u00e2\u20ac\u201d `await this.db.transaction(async (trx) => { ... })` with inline repository calls",
+        "transfers.service.ts \u00e2\u20ac\u201d also uses db.transaction but delegates to repositories inside the transaction",
+        "wallets.service.ts, users.service.ts, ledger.service.ts \u00e2\u20ac\u201d none inject the database directly"
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "mid_level_elegance",
+      "identifier": "mid-004",
+      "summary": "LedgerController.list manually constructs a LedgerQueryDTO by casting `req.query.walletId as string` and calling `Number()` on page/limit. Other controllers delegate request parsing to the validation middleware (which uses Zod schemas), keeping controllers thin. This ad-hoc parsing is a minor glue-code seam \u00e2\u20ac\u201d the ledgerQuerySchema already exists and is applied via middleware on the route, but the controller ignores the parsed result and re-extracts from raw query params.",
+      "confidence": "low",
+      "suggestion": "Fix: LedgerController.list manually constructs a LedgerQueryDTO by casting `req.query.walletId as string` and calling `Number()` on page/limit. Other controllers delegate request parsing to the validation middleware (which uses Zod schemas), keeping controllers thin. This ad-hoc parsing is a minor glue-code seam \u00e2\u20ac\u201d the ledgerQuerySchema already exists and is applied via middleware on the route, but the controller ignores the parsed result and re-extracts from raw query params.",
+      "related_files": [
+        "src/modules/ledger/ledger.controller.ts"
+      ],
+      "evidence": [
+        "ledger.controller.ts:12-16 \u00e2\u20ac\u201d manual query param extraction with `as string` cast and `Number()` calls",
+        "ledger.routes.ts:12 \u00e2\u20ac\u201d `validate(ledgerQuerySchema, 'query')` is applied but the controller doesn't use the parsed output",
+        "wallets.controller.ts:34 \u00e2\u20ac\u201d `req.params.id` also not validated via middleware output, but walletIdSchema is applied on the route"
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "mid_level_elegance",
+      "identifier": "mid-005",
+      "summary": "Every controller method follows the exact same pattern: `try { const result = await this.service.method(...); return res.status(N).json({ data: result }); } catch (error) { return next(error); }`. This catch-forward block is repeated ~10 times across 5 controllers. While the pattern is correct and consistent, the repetition suggests the try-catch could be extracted into a shared wrapper (e.g., a `wrap()` higher-order function) to eliminate the boilerplate and reduce the chance of inconsistency if the error-forwarding strategy changes.",
+      "confidence": "low",
+      "suggestion": "Fix: Every controller method follows the exact same pattern: `try { const result = await this.service.method(...); return res.status(N).json({ data: result }); } catch (error) { return next(error); }`. This catch-forward block is repeated ~10 times across 5 controllers. While the pattern is correct and consistent, the repetition suggests the try-catch could be extracted into a shared wrapper (e.g., a `wrap()` higher-order function) to eliminate the boilerplate and reduce the chance of inconsistency if the error-forwarding strategy changes.",
+      "related_files": [
+        "src/modules/*/src/*.controller.ts"
+      ],
+      "evidence": [
+        "auth.controller.ts:11-16, 20-25",
+        "users.controller.ts:10-16, 19-25",
+        "wallets.controller.ts:10-19, 22-29, 32-38",
+        "transfers.controller.ts:10-19, 22-29",
+        "ledger.controller.ts:10-21"
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "test_strategy",
+      "identifier": "T1",
+      "summary": "The integration test directory exists but contains no test files. For a wallet/transfer service handling money, end-to-end tests verifying the Express route \u00e2\u2020\u2019 controller \u00e2\u2020\u2019 service \u00e2\u2020\u2019 repository pipeline are essential. Critical paths like fund transfer (which involves transaction wrapping, row-level locks, double-entry ledger writes, and idempotency) have no integration verification.",
+      "confidence": "high",
+      "suggestion": "Add integration tests for: (1) POST /api/v1/transfers with valid/invalid payloads through the full HTTP stack, (2) POST /api/v1/auth/register and POST /api/v1/auth/login flows, (3) concurrent transfer race conditions against a real or containerized MySQL. Use supertest + a test database.",
+      "related_files": [
+        "tests/integration/ (empty directory)"
+      ],
+      "evidence": [
+        "tests/integration/ has 0 entries; jest.config.ts roots: ['<rootDir>/tests'] includes integration/ but nothing matches."
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "test_strategy",
+      "identifier": "T2",
+      "summary": "auth.middleware.ts handles JWT parsing, Bearer scheme validation, and user attachment to req \u00e2\u20ac\u201d none of these branches are tested. validation.middleware.ts mutates req[source] with Zod-parsed output \u00e2\u20ac\u201d untested. error.middleware.ts classifies errors into HTTP responses (ZodError\u00e2\u2020\u2019400, AppError\u00e2\u2020\u2019mapped status, unknown\u00e2\u2020\u2019500) \u00e2\u20ac\u201d untested. idempotency.middleware.ts extracts the idempotency header \u00e2\u20ac\u201d untested. These are on every authenticated request path.",
+      "confidence": "high",
+      "suggestion": "Add unit tests for each middleware: (1) auth.middleware \u00e2\u20ac\u201d missing header, malformed scheme, expired token, valid token, (2) validation.middleware \u00e2\u20ac\u201d valid body passes through, invalid body triggers ZodError, (3) error.middleware \u00e2\u20ac\u201d ZodError, AppError, unknown error, (4) idempotency.middleware \u00e2\u20ac\u201d missing header, present header. These are small, fast, high-value tests.",
+      "related_files": [
+        "src/shared/middleware/auth.middleware.ts, src/shared/middleware/validation.middleware.ts, src/shared/middleware/error.middleware.ts, src/shared/middleware/idempotency.middleware.ts"
+      ],
+      "evidence": [
+        "No test files exist under tests/ that import or reference any middleware. Grep for 'authMiddleware' or 'errorMiddleware' in tests/ returns nothing."
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "test_strategy",
+      "identifier": "T3",
+      "summary": "LedgerService.listEntries performs wallet ownership verification (NotFoundError if wallet missing, ForbiddenError if wrong user) \u00e2\u20ac\u201d identical pattern to WalletsService.getById which IS tested. This authorization gate is completely untested.",
+      "confidence": "high",
+      "suggestion": "Add tests/unit/ledger/ledger.service.test.ts mirroring the wallets service test pattern: test ownership check, wallet-not-found, and successful listing.",
+      "related_files": [
+        "src/modules/ledger/ledger.service.ts"
+      ],
+      "evidence": [
+        "ledger.service.ts:15-19 checks wallet.userId !== requestingUserId and throws ForbiddenError. No test file exists in tests/unit/ledger/."
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "test_strategy",
+      "identifier": "T4",
+      "summary": "Controllers extract request properties (req.user!.sub, req.idempotencyKey, req.body, req.params, req.query), set HTTP status codes (201 vs 200), and route errors to next(). While thin, they contain request-to-DTO mapping logic and non-trivial property extraction that could break. No tests verify correct status codes or correct DTO construction from request objects.",
+      "confidence": "medium",
+      "suggestion": "Add controller unit tests using mocked service dependencies. Focus on: correct status codes (201 for create, 200 for read), correct DTO construction from request, error propagation via next(), and the manual 404 in getMyWallet.",
+      "related_files": [
+        "src/modules/auth/auth.controller.ts, src/modules/users/users.controller.ts, src/modules/wallets/wallets.controller.ts, src/modules/ledger/ledger.controller.ts, src/modules/transfers/transfers.controller.ts"
+      ],
+      "evidence": [
+        "transfers.controller.ts:13 spreads req.body with idempotencyKey from req.idempotencyKey \u00e2\u20ac\u201d this binding is untested. wallets.controller.ts:25 returns 404 manually for null wallet \u00e2\u20ac\u201d untested."
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "test_strategy",
+      "identifier": "T5",
+      "summary": "Each module defines Zod schemas for request validation (e.g., transfers.validator.ts amount regex, auth.validator.ts email/password constraints). These schemas are the input contract but have no tests verifying rejection of malformed input.",
+      "confidence": "medium",
+      "suggestion": "Add schema validation tests for each validator: test both valid and invalid inputs, boundary values (e.g., amount with 5 decimal places should fail, amount with 4 should pass, empty string, negative, zero).",
+      "related_files": [
+        "src/modules/*/ *.validator.ts"
+      ],
+      "evidence": [
+        "transfers.validator.ts:8 uses regex /^\\d+(\\.\\d{1,4})?$/ for amount \u00e2\u20ac\u201d edge cases like negative numbers, scientific notation, very large numbers are untested."
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "test_strategy",
+      "identifier": "T6",
+      "summary": "makeService() creates a TransfersService with one set of repository mocks, but returns DIFFERENT mock instances for walletsRepo, transfersRepo, ledgerRepo, and db. If any test asserts on the returned repo mocks rather than the ones passed to the service, assertions would silently pass against the wrong mock. Currently no tests do this (the happy path tests create their own independent repos), but the pattern is fragile and confusing.",
+      "confidence": "medium",
+      "suggestion": "Refactor makeService to return the same mock instances it passes to the constructor. Either: (1) create mocks first, pass to both service and return, or (2) remove the redundant returned mocks if tests don't need them.",
+      "related_files": [
+        "tests/unit/transfers/transfers.service.test.ts:55-70"
+      ],
+      "evidence": [
+        "makeService at line 64 passes makeWalletsRepo to the service constructor, then at line 65 creates a separate makeWalletsRepo for the return value. The returned walletsRepo is never used by the service."
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "test_strategy",
+      "identifier": "T7",
+      "summary": "TransfersService.create wraps debit/credit/ledger in db.transaction(). The mock db always resolves the transaction callback successfully. No test verifies that a failure during ledger insert causes the entire transaction to roll back, or that debit is not committed if credit fails.",
+      "confidence": "medium",
+      "suggestion": "Add tests where: (1) ledgerRepository.insert throws after debit succeeds \u00e2\u20ac\u201d verify the transaction callback propagates the error, (2) credit throws after debit succeeds \u00e2\u20ac\u201d verify error propagation. This ensures the transaction boundary actually protects data consistency.",
+      "related_files": [
+        "tests/unit/transfers/transfers.service.test.ts"
+      ],
+      "evidence": [
+        "makeMockDb at line 51-53 always calls cb({}) successfully. No test makes the transaction callback throw mid-execution."
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "test_strategy",
+      "identifier": "T8",
+      "summary": "normalizePagination has boundary logic (page < 1 \u00e2\u2020\u2019 1, limit > 100 \u00e2\u2020\u2019 100, limit < 1 \u00e2\u2020\u2019 1) and case.ts converts snake_case to camelCase. These are used by repositories but never tested directly. The boundary math in pagination is particularly error-prone.",
+      "confidence": "low",
+      "suggestion": "Add quick unit tests for pagination boundaries (page=0, page=-1, limit=0, limit=200, limit=101) and case conversion (snake_case, camelCase passthrough, consecutive underscores).",
+      "related_files": [
+        "src/shared/utils/pagination.ts, src/shared/utils/case.ts"
+      ],
+      "evidence": [
+        "pagination.ts:4-5 uses Math.max(1, ...) and Math.min(100, Math.max(1, ...)) \u00e2\u20ac\u201d these edge cases are untested. case.ts:2 regex /_([a-z])/g is untested for multi-word, consecutive underscores, etc."
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "api_surface_coherence",
+      "identifier": "dim-1",
+      "summary": "Inconsistent auth middleware application across route modules: `POST /users` has no auth middleware while `GET /users/:id` applies it per-route. In contrast, wallets, transfers, and ledger all apply `router.use(authMiddleware)` at the router level, protecting every endpoint uniformly. This means user creation is the only non-auth-route mutation endpoint left unprotected.",
+      "confidence": "medium",
+      "suggestion": "Fix: Inconsistent auth middleware application across route modules: `POST /users` has no auth middleware while `GET /users/:id` applies it per-route. In contrast, wallets, transfers, and ledger all apply `router.use(authMiddleware)` at the router level, protecting every endpoint uniformly. This means user creation is the only non-auth-route mutation endpoint left unprotected.",
+      "related_files": [
+        "src/modules/users/users.routes.ts"
+      ],
+      "evidence": [
+        "users.routes.ts:11 applies `authMiddleware` only on `GET /:id`, leaving `POST /` (line 10) unprotected. wallets.routes.ts:11, transfers.routes.ts:12, ledger.routes.ts:11 all use `router.use(authMiddleware)` for full coverage."
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "api_surface_coherence",
+      "identifier": "dim-2",
+      "summary": "`getMyWallet` returns a raw 404 inline (`res.status(404).json({ message: 'No wallet found for this user' })`) instead of throwing `NotFoundError` and delegating to the error middleware like every other controller. This produces a different error response shape for this endpoint: `{ message }` without the `code` field that AppError-based 404s include.",
+      "confidence": "low",
+      "suggestion": "Fix: `getMyWallet` returns a raw 404 inline (`res.status(404).json({ message: 'No wallet found for this user' })`) instead of throwing `NotFoundError` and delegating to the error middleware like every other controller. This produces a different error response shape for this endpoint: `{ message }` without the `code` field that AppError-based 404s include.",
+      "related_files": [
+        "src/modules/wallets/wallets.controller.ts"
+      ],
+      "evidence": [
+        "wallets.controller.ts:25 returns inline 404 with `{ message: 'No wallet found for this user' }`. All other controllers (users.controller.ts:16, transfers.controller.ts:24, ledger.service.ts:17) throw `NotFoundError` and rely on error middleware which returns `{ message, code: 'NOT_FOUND' }`."
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "api_surface_coherence",
+      "identifier": "dim-3",
+      "summary": "Redundant manual type coercion in the ledger controller. `req.query.page` and `req.query.limit` are manually converted with `Number()`, but the validation middleware already applies `z.coerce.number()` from the schema before the controller runs, making the controller-side conversion a no-op.",
+      "confidence": "low",
+      "suggestion": "Fix: Redundant manual type coercion in the ledger controller. `req.query.page` and `req.query.limit` are manually converted with `Number()`, but the validation middleware already applies `z.coerce.number()` from the schema before the controller runs, making the controller-side conversion a no-op.",
+      "related_files": [
+        "src/modules/ledger/ledger.controller.ts"
+      ],
+      "evidence": [
+        "ledger.controller.ts:14-15 uses `Number(req.query.page)` and `Number(req.query.limit)`. ledger.validator.ts:5-6 uses `z.coerce.number()` which the validation middleware (validation.middleware.ts:6-7) applies before the controller executes, already coercing these to numbers."
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "api_surface_coherence",
+      "identifier": "dim-4",
+      "summary": "`POST /api/v1/users` creates a user with `{ email, password }` without authentication, duplicating the registration path that `POST /api/v1/auth/register` also provides. The two endpoints have divergent behavior: auth/register checks the Adjutor blacklist, creates a wallet, issues a JWT, and hashes the password server-side, while users/create does none of these and accepts a raw password. Having two unauthenticated user-creation endpoints with different security properties undermines the API contract.",
+      "confidence": "medium",
+      "suggestion": "Fix: `POST /api/v1/users` creates a user with `{ email, password }` without authentication, duplicating the registration path that `POST /api/v1/auth/register` also provides. The two endpoints have divergent behavior: auth/register checks the Adjutor blacklist, creates a wallet, issues a JWT, and hashes the password server-side, while users/create does none of these and accepts a raw password. Having two unauthenticated user-creation endpoints with different security properties undermines the API contract.",
+      "related_files": [
+        "src/modules/users/users.controller.ts"
+      ],
+      "evidence": [
+        "users.controller.ts:10-16 calls `usersService.create(req.body)` with no auth. auth.controller.ts:19-25 calls `authService.register(req.body)` which performs blacklist check, password hashing, wallet creation, and token issuance (auth.service.ts:33-73). Both are open POST endpoints accepting `{ email, password }`."
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "authorization_consistency",
+      "identifier": "auth-1",
+      "summary": "TransfersService.getById fetches any transfer by ID without verifying the requesting user owns either the source or destination wallet. Any authenticated user can enumerate transfer records. The ITransfersService.getById interface accepts only `id: string` with no requestingUserId parameter, and the controller passes no auth identity through.",
+      "confidence": "high",
+      "suggestion": "Fix: TransfersService.getById fetches any transfer by ID without verifying the requesting user owns either the source or destination wallet. Any authenticated user can enumerate transfer records. The ITransfersService.getById interface accepts only `id: string` with no requestingUserId parameter, and the controller passes no auth identity through.",
+      "related_files": [
+        "src/modules/transfers/transfers.controller.ts"
+      ],
+      "evidence": [
+        "src/modules/transfers/transfers.service.ts:94-98 \u00e2\u20ac\u201d getById returns transfer with no ownership gate",
+        "src/modules/transfers/transfers.controller.ts:22-28 \u00e2\u20ac\u201d calls getById(req.params.id) without req.user",
+        "src/modules/transfers/transfers.types.ts \u00e2\u20ac\u201d ITransfersService.getById(id: string) has no requestingUserId param"
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "authorization_consistency",
+      "identifier": "auth-2",
+      "summary": "UsersService.getById returns any user by ID without verifying the requesting user is the target. The route is auth-protected (users.routes.ts:12) so only authenticated users hit this, but any authenticated user can look up any other user's email and timestamps. The IUsersService.getById interface accepts only `id: string` with no requestingUserId.",
+      "confidence": "medium",
+      "suggestion": "Fix: UsersService.getById returns any user by ID without verifying the requesting user is the target. The route is auth-protected (users.routes.ts:12) so only authenticated users hit this, but any authenticated user can look up any other user's email and timestamps. The IUsersService.getById interface accepts only `id: string` with no requestingUserId.",
+      "related_files": [
+        "src/modules/users/users.controller.ts"
+      ],
+      "evidence": [
+        "src/modules/users/users.service.ts:14-20 \u00e2\u20ac\u201d getById returns user with no ownership gate",
+        "src/modules/users/users.controller.ts:19-26 \u00e2\u20ac\u201d calls getById(req.params.id) without req.user",
+        "src/modules/users/users.types.ts \u00e2\u20ac\u201d IUsersService.getById(id: string) has no requestingUserId param"
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "authorization_consistency",
+      "identifier": "auth-3",
+      "summary": "Users module applies authMiddleware per-route (only on GET /:id) while wallets, transfers, and ledger apply router.use(authMiddleware) at the router level. This is functionally correct \u00e2\u20ac\u201d POST /users is public registration \u00e2\u20ac\u201d but creates a pattern inconsistency. A developer adding a new users route may not notice that auth is opt-in here, not opt-out.",
+      "confidence": "low",
+      "suggestion": "Fix: Users module applies authMiddleware per-route (only on GET /:id) while wallets, transfers, and ledger apply router.use(authMiddleware) at the router level. This is functionally correct \u00e2\u20ac\u201d POST /users is public registration \u00e2\u20ac\u201d but creates a pattern inconsistency. A developer adding a new users route may not notice that auth is opt-in here, not opt-out.",
+      "related_files": [
+        "src/modules/users/users.routes.ts"
+      ],
+      "evidence": [
+        "src/modules/users/users.routes.ts:11-12 \u00e2\u20ac\u201d authMiddleware applied per-route",
+        "src/modules/wallets/wallets.routes.ts:11 \u00e2\u20ac\u201d router.use(authMiddleware) at top",
+        "src/modules/transfers/transfers.routes.ts:12 \u00e2\u20ac\u201d router.use(authMiddleware) at top",
+        "src/modules/ledger/ledger.routes.ts:11 \u00e2\u20ac\u201d router.use(authMiddleware) at top"
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "ai_generated_debt",
+      "identifier": "ai_debt_001",
+      "summary": "Every controller handler method in the codebase wraps the service call in the same verbatim pattern: `try { const result = await this.<service>.<method>(...); return res.status(2xx).json({ data: result }); } catch (error) { return next(error); }`. This appears in auth.controller.ts (lines 10-17, 19-26), users.controller.ts (lines 10-17, 19-26), wallets.controller.ts (lines 10-19, 22-29, 32-39), ledger.controller.ts (lines 10-22), and transfers.controller.ts (lines 10-19, 22-29) \u2014 approximately 10 methods across 5 files with identical try/catch structure. A single `wrapHandler` utility could eliminate this repeated scaffolding.",
+      "confidence": "medium",
+      "suggestion": "Fix: Every controller handler method in the codebase wraps the service call in the same verbatim pattern: `try { const result = await this.<service>.<method>(...); return res.status(2xx).json({ data: result }); } catch (error) { return next(error); }`. This appears in auth.controller.ts (lines 10-17, 19-26), users.controller.ts (lines 10-17, 19-26), wallets.controller.ts (lines 10-19, 22-29, 32-39), ledger.controller.ts (lines 10-22), and transfers.controller.ts (lines 10-19, 22-29) \u2014 approximately 10 methods across 5 files with identical try/catch structure. A single `wrapHandler` utility could eliminate this repeated scaffolding.",
+      "related_files": [
+        "src/modules/auth/auth.controller.ts"
+      ],
+      "evidence": [
+        "Identical try/catch scaffolding across all controller handlers with no added behavior in catch blocks."
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "ai_generated_debt",
+      "identifier": "ai_debt_002",
+      "summary": "The `fetchKarma` private method (lines 86-106) wraps the `fetch()` call in a try-catch that catches network-level failures and immediately re-throws them without modification or logging. Lines 94-97: `catch (err) { throw err; }`. This is purely defensive wrapping that adds a stack frame without any behavior change. The caller (`isBlacklisted`) already handles the error case.",
+      "confidence": "low",
+      "suggestion": "Fix: The `fetchKarma` private method (lines 86-106) wraps the `fetch()` call in a try-catch that catches network-level failures and immediately re-throws them without modification or logging. Lines 94-97: `catch (err) { throw err; }`. This is purely defensive wrapping that adds a stack frame without any behavior change. The caller (`isBlacklisted`) already handles the error case.",
+      "related_files": [
+        "src/modules/adjutor/adjutor.service.ts"
+      ],
+      "evidence": [
+        "adjutor.service.ts:89-97: try { response = await fetch(...) } catch (err) { throw err; } \u2014 catch block adds zero behavior",
+        "The inline comment on line 95 ('Network-level failure... always retryable') is the only justification, but the re-throw itself does nothing"
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "ai_generated_debt",
+      "identifier": "ai_debt_003",
+      "summary": "Two service methods are pure pass-throughs that forward directly to the repository with zero business logic: `UsersService.create` (users.service.ts:10-12) returns `this.usersRepository.create(data)` and `WalletsService.create` (wallets.service.ts:13-15) returns `this.walletsRepository.create(data)`. These add an indirection layer with no validation, transformation, or error handling \u2014 the service interface exists but contributes nothing for these methods.",
+      "confidence": "low",
+      "suggestion": "Fix: Two service methods are pure pass-throughs that forward directly to the repository with zero business logic: `UsersService.create` (users.service.ts:10-12) returns `this.usersRepository.create(data)` and `WalletsService.create` (wallets.service.ts:13-15) returns `this.walletsRepository.create(data)`. These add an indirection layer with no validation, transformation, or error handling \u2014 the service interface exists but contributes nothing for these methods.",
+      "related_files": [
+        "src/modules/users/users.service.ts"
+      ],
+      "evidence": [
+        "users.service.ts:10-12: `async create(data: CreateUserDTO): Promise<User> { return this.usersRepository.create(data); }` \u2014 identical to a direct repository call",
+        "wallets.service.ts:13-15: `async create(data: CreateWalletDTO): Promise<Wallet> { return this.walletsRepository.create(data); }` \u2014 same pattern"
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "ai_generated_debt",
+      "identifier": "ai_debt_004",
+      "summary": "retry.ts has a comment ratio of 0.31 (codebase average: 0.024 \u2014 13x higher). The JSDoc on `RetryOptions.delays` (lines 3-9) explains what the array length means with a worked example, but the function's own JSDoc (lines 18-21) restates what the code does line-by-line: 'Calls fn up to delays.length + 1 times' mirrors the loop bound, 'Waits delays[i] ms before the (i+1)-th retry' mirrors the sleep call, 'Re-throws the last error if all attempts fail' mirrors the throw at line 44. These comments add no 'why' \u2014 they restate 'what' the adjacent code already expresses.",
+      "confidence": "low",
+      "suggestion": "Fix: retry.ts has a comment ratio of 0.31 (codebase average: 0.024 \u2014 13x higher). The JSDoc on `RetryOptions.delays` (lines 3-9) explains what the array length means with a worked example, but the function's own JSDoc (lines 18-21) restates what the code does line-by-line: 'Calls fn up to delays.length + 1 times' mirrors the loop bound, 'Waits delays[i] ms before the (i+1)-th retry' mirrors the sleep call, 'Re-throws the last error if all attempts fail' mirrors the throw at line 44. These comments add no 'why' \u2014 they restate 'what' the adjacent code already expresses.",
+      "related_files": [
+        "src/shared/utils/retry.ts"
+      ],
+      "evidence": [
+        "retry.ts comment ratio: 0.31 vs codebase average 0.024 (per ai_debt_signals)",
+        "Lines 18-21: function JSDoc restates the for-loop logic, sleep call, and final throw without explaining design rationale"
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "ai_generated_debt",
+      "identifier": "ai_debt_005",
+      "summary": "auth.service.ts uses section dividers (`// \u2500\u2500 Register \u2500\u2500`, `// \u2500\u2500 Login \u2500\u2500`, `// \u2500\u2500 Helpers \u2500\u2500`) and numbered step comments (`// 1. Karma blacklist check`, `// 2. Duplicate email check`, `// 3. Hash password`, etc.) throughout its 104 lines. While the 'avoid user enumeration' comment on line 80 explains WHY, most numbered steps merely announce what the next code block does (restating). The same section divider pattern appears in container.ts (6 dividers in 62 lines), transfers.service.ts, server.ts, and app.ts \u2014 a consistent AI-generation tell of decorating code with visual structure that adds navigation noise in small files.",
+      "confidence": "low",
+      "suggestion": "Fix: auth.service.ts uses section dividers (`// \u2500\u2500 Register \u2500\u2500`, `// \u2500\u2500 Login \u2500\u2500`, `// \u2500\u2500 Helpers \u2500\u2500`) and numbered step comments (`// 1. Karma blacklist check`, `// 2. Duplicate email check`, `// 3. Hash password`, etc.) throughout its 104 lines. While the 'avoid user enumeration' comment on line 80 explains WHY, most numbered steps merely announce what the next code block does (restating). The same section divider pattern appears in container.ts (6 dividers in 62 lines), transfers.service.ts, server.ts, and app.ts \u2014 a consistent AI-generation tell of decorating code with visual structure that adds navigation noise in small files.",
+      "related_files": [
+        "src/modules/auth/auth.service.ts"
+      ],
+      "evidence": [
+        "auth.service.ts:32, 34, 44, 50, 53, 65, 75, 77, 85, 91, 100 \u2014 11 comment lines in 104 LOC, mostly restating code intent",
+        "container.ts:32, 35, 38, 43, 48, 53, 58 \u2014 7 section dividers in 62 lines",
+        "transfers.service.ts:23, 30, 40, 58, 63, 73, 77 \u2014 7 section dividers in 99 lines"
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "incomplete_migration",
+      "identifier": "dim-1",
+      "summary": "knexfile.ts reads process.env directly with manual || fallbacks for all database connection variables (DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME) across three environment blocks (lines 8-14, 31-37, 49-56). src/config/env.ts provides zod-validated config for the exact same variables. The knexfile re-implements the same defaults independently, meaning env validation and fallback values can drift between the two code paths. This is a classic incomplete migration: the centralized env system was introduced but the knexfile was never updated to use it.",
+      "confidence": "low",
+      "suggestion": "Fix: knexfile.ts reads process.env directly with manual || fallbacks for all database connection variables (DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME) across three environment blocks (lines 8-14, 31-37, 49-56). src/config/env.ts provides zod-validated config for the exact same variables. The knexfile re-implements the same defaults independently, meaning env validation and fallback values can drift between the two code paths. This is a classic incomplete migration: the centralized env system was introduced but the knexfile was never updated to use it.",
+      "related_files": [
+        "knexfile.ts"
+      ],
+      "evidence": [
+        "knexfile.ts:10 \u2014 process.env.DB_HOST || '127.0.0.1' duplicates env.ts default",
+        "knexfile.ts:11 \u2014 process.env.DB_PORT || 3306 duplicates env.ts default",
+        "knexfile.ts:12 \u2014 process.env.DB_USER || 'root' duplicates env.ts default",
+        "knexfile.ts:13 \u2014 process.env.DB_PASSWORD || '' duplicates env.ts default",
+        "knexfile.ts:14 \u2014 process.env.DB_NAME || 'democredit' duplicates env.ts default",
+        "src/config/env.ts:11-14 \u2014 zod schema defines the same variables with the same defaults"
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "incomplete_migration",
+      "identifier": "dim-2",
+      "summary": "The DI container uses two different registration/resolution patterns within the same file. Services and repositories are registered and injected via string tokens from TOKENS constants (container.register<IAuthService>(TOKENS.AuthService, ...)), while all five controllers are registered and resolved by class reference (container.register(AuthController, { useClass: AuthController })). The TOKENS object in constants.ts has no entries for controllers. This is a visible mixed old/new pattern \u2014 the token-based approach was applied to the service layer but never extended to controllers.",
+      "confidence": "low",
+      "suggestion": "Fix: The DI container uses two different registration/resolution patterns within the same file. Services and repositories are registered and injected via string tokens from TOKENS constants (container.register<IAuthService>(TOKENS.AuthService, ...)), while all five controllers are registered and resolved by class reference (container.register(AuthController, { useClass: AuthController })). The TOKENS object in constants.ts has no entries for controllers. This is a visible mixed old/new pattern \u2014 the token-based approach was applied to the service layer but never extended to controllers.",
+      "related_files": [
+        "src/config/container.ts"
+      ],
+      "evidence": [
+        "src/shared/utils/constants.ts:1-13 \u2014 TOKENS has entries for services/repos but none for controllers",
+        "src/config/container.ts:36 \u2014 services use: container.register<IAdjutorService>(TOKENS.AdjutorService, ...)",
+        "src/config/container.ts:41 \u2014 controllers use: container.register(UsersController, { useClass: UsersController })",
+        "src/modules/auth/auth.routes.ts:8 \u2014 controllers resolved by class: container.resolve(AuthController)",
+        "src/modules/users/users.routes.ts:9 \u2014 same class-based resolution pattern",
+        "All 5 controller registrations (lines 41, 46, 51, 56, 60) lack token-based registration"
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "package_organization",
+      "identifier": "dim-1",
+      "summary": "adjutor module has only 2 files (service + types) while sibling modules have 5-6 files (controller, repository, routes, service, types, validator). This is a justified structural difference since adjutor is an external KYC service adapter consumed internally, not a domain entity with its own routes/DB persistence. No action needed.",
+      "confidence": "medium",
+      "suggestion": "Fix: adjutor module has only 2 files (service + types) while sibling modules have 5-6 files (controller, repository, routes, service, types, validator). This is a justified structural difference since adjutor is an external KYC service adapter consumed internally, not a domain entity with its own routes/DB persistence. No action needed.",
+      "related_files": [
+        "src/modules/adjutor/"
+      ],
+      "evidence": [
+        "adjutor/ contains adjutor.service.ts and adjutor.types.ts only; all other modules have controller/routes/repository/validator files"
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "package_organization",
+      "identifier": "dim-2",
+      "summary": "Empty seeds directory exists with no seed files. Referenced by knexfile.ts configuration across all environments. Adds navigational noise without content.",
+      "confidence": "medium",
+      "suggestion": "Fix: Empty seeds directory exists with no seed files. Referenced by knexfile.ts configuration across all environments. Adds navigational noise without content.",
+      "related_files": [
+        "src/database/seeds/"
+      ],
+      "evidence": [
+        "src/database/seeds/ is empty (0 files)"
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "package_organization",
+      "identifier": "dim-3",
+      "summary": "Empty integration test directory exists with no test files. Indicates an incomplete test strategy but is not a structural organization problem in itself.",
+      "confidence": "medium",
+      "suggestion": "Fix: Empty integration test directory exists with no test files. Indicates an incomplete test strategy but is not a structural organization problem in itself.",
+      "related_files": [
+        "tests/integration/"
+      ],
+      "evidence": [
+        "tests/integration/ is empty (0 files)"
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "package_organization",
+      "identifier": "dim-4",
+      "summary": "Root-level knexfile.ts has 0 importers and sits outside src/. However, Knex CLI looks for knexfile.ts at project root by default \u00e2\u20ac\u201d this is a framework-imposed placement, not an organizational issue.",
+      "confidence": "low",
+      "suggestion": "Fix: Root-level knexfile.ts has 0 importers and sits outside src/. However, Knex CLI looks for knexfile.ts at project root by default \u00e2\u20ac\u201d this is a framework-imposed placement, not an organizational issue.",
+      "related_files": [
+        "knexfile.ts"
+      ],
+      "evidence": [
+        "knexfile.ts fan_in: 0, fan_out: 0; referenced by knex CLI commands in package.json scripts"
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "initialization_coupling",
+      "identifier": "dim-1",
+      "summary": "Every route file (auth.routes.ts:8, users.routes.ts:9, wallets.routes.ts:9, ledger.routes.ts:9, transfers.routes.ts:10) calls container.resolve(Controller) at module scope. This couples route file loading order to container registration order. In server.ts, app (which imports routes) is imported before container.ts (line 10), meaning routes execute container.resolve() before container.ts registers any services. This works only because CommonJS hoists all require() calls before non-import statements, but it creates a hidden ordering dependency that would break under ESM or if imports are reordered.",
+      "confidence": "medium",
+      "suggestion": "Fix: Every route file (auth.routes.ts:8, users.routes.ts:9, wallets.routes.ts:9, ledger.routes.ts:9, transfers.routes.ts:10) calls container.resolve(Controller) at module scope. This couples route file loading order to container registration order. In server.ts, app (which imports routes) is imported before container.ts (line 10), meaning routes execute container.resolve() before container.ts registers any services. This works only because CommonJS hoists all require() calls before non-import statements, but it creates a hidden ordering dependency that would break under ESM or if imports are reordered.",
+      "related_files": [
+        "src/modules/auth/auth.routes.ts"
+      ],
+      "evidence": [
+        "src/modules/auth/auth.routes.ts:8 \u00e2\u20ac\u201d container.resolve(AuthController) at module scope",
+        "src/modules/users/users.routes.ts:9 \u00e2\u20ac\u201d container.resolve(UsersController) at module scope",
+        "src/modules/wallets/wallets.routes.ts:9 \u00e2\u20ac\u201d container.resolve(WalletsController) at module scope",
+        "src/modules/ledger/ledger.routes.ts:9 \u00e2\u20ac\u201d container.resolve(LedgerController) at module scope",
+        "src/modules/transfers/transfers.routes.ts:10 \u00e2\u20ac\u201d container.resolve(TransfersController) at module scope",
+        "src/server.ts:6 \u00e2\u20ac\u201d app imported before container.ts on line 10"
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "initialization_coupling",
+      "identifier": "dim-2",
+      "summary": "env.ts calls envSchema.parse(process.env) at module scope (line 22), which validates and freezes env values at import time. In server.ts, dotenv.config() is called between imports (line 4), but TypeScript CommonJS compilation hoists all require() calls above non-import statements, so env.ts parsing runs before dotenv loads the .env file. This means required vars (JWT_SECRET, ADJUTOR_API_KEY) must be set in the actual environment, not just .env, or the process crashes at import time with no recovery path.",
+      "confidence": "medium",
+      "suggestion": "Fix: env.ts calls envSchema.parse(process.env) at module scope (line 22), which validates and freezes env values at import time. In server.ts, dotenv.config() is called between imports (line 4), but TypeScript CommonJS compilation hoists all require() calls above non-import statements, so env.ts parsing runs before dotenv loads the .env file. This means required vars (JWT_SECRET, ADJUTOR_API_KEY) must be set in the actual environment, not just .env, or the process crashes at import time with no recovery path.",
+      "related_files": [
+        "src/config/env.ts"
+      ],
+      "evidence": [
+        "src/config/env.ts:22 \u00e2\u20ac\u201d const env = envSchema.parse(process.env) at module scope",
+        "src/config/env.ts:14 \u00e2\u20ac\u201d JWT_SECRET: z.string().min(1) required, no default",
+        "src/config/env.ts:18 \u00e2\u20ac\u201d ADJUTOR_API_KEY: z.string().min(1) required, no default",
+        "src/server.ts:4 \u00e2\u20ac\u201d dotenv.config() is a non-import statement, hoisted after all require() calls"
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "initialization_coupling",
+      "identifier": "dim-3",
+      "summary": "database.ts instantiates Knex with pool (min:2, max:10) at module scope (line 27). Any module importing database.ts triggers immediate DB connection attempts, even if the connection will fail (e.g., DB not ready during startup). This is partially mitigated by server.ts verifying connectivity before accepting traffic, but the pool creation itself happens eagerly at import time.",
+      "confidence": "low",
+      "suggestion": "Fix: database.ts instantiates Knex with pool (min:2, max:10) at module scope (line 27). Any module importing database.ts triggers immediate DB connection attempts, even if the connection will fail (e.g., DB not ready during startup). This is partially mitigated by server.ts verifying connectivity before accepting traffic, but the pool creation itself happens eagerly at import time.",
+      "related_files": [
+        "src/config/database.ts"
+      ],
+      "evidence": [
+        "src/config/database.ts:27 \u00e2\u20ac\u201d const db = knex(createKnexConfig()) at module scope",
+        "src/config/database.ts:14 \u00e2\u20ac\u201d pool: { min: 2, max: 10 } creates connections immediately"
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "initialization_coupling",
+      "identifier": "dim-4",
+      "summary": "logger.ts creates a pino instance at module scope, reading env.LOG_LEVEL and env.NODE_ENV. Since env is parsed at import time (and before dotenv in CommonJS), the logger picks up environment values at module load. This is a minor coupling \u00e2\u20ac\u201d the logger configuration is effectively frozen at first import.",
+      "confidence": "low",
+      "suggestion": "Fix: logger.ts creates a pino instance at module scope, reading env.LOG_LEVEL and env.NODE_ENV. Since env is parsed at import time (and before dotenv in CommonJS), the logger picks up environment values at module load. This is a minor coupling \u00e2\u20ac\u201d the logger configuration is effectively frozen at first import.",
+      "related_files": [
+        "src/shared/utils/logger.ts"
+      ],
+      "evidence": [
+        "src/shared/utils/logger.ts:4-7 \u00e2\u20ac\u201d pino() called at module scope with env values",
+        "src/shared/utils/logger.ts:2 \u00e2\u20ac\u201d imports env which is parsed at import time"
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "design_coherence",
+      "identifier": "dim-1",
+      "summary": "AuthService.register() directly calls this.usersRepository.create() and this.usersRepository.findByEmail() / findByEmailWithHash(), completely skipping the UsersService layer. While this is functionally correct (AuthService needs password hashing and the specialized findByEmailWithHash), it violates the intended layering where services should communicate through service interfaces, not reach into sibling repositories. This creates a precedent where cross-module coupling goes directly to persistence, undermining the abstraction the service layer provides.",
+      "confidence": "medium",
+      "suggestion": "Fix: AuthService.register() directly calls this.usersRepository.create() and this.usersRepository.findByEmail() / findByEmailWithHash(), completely skipping the UsersService layer. While this is functionally correct (AuthService needs password hashing and the specialized findByEmailWithHash), it violates the intended layering where services should communicate through service interfaces, not reach into sibling repositories. This creates a precedent where cross-module coupling goes directly to persistence, undermining the abstraction the service layer provides.",
+      "related_files": [
+        "src/modules/auth/auth.service.ts:54-61"
+      ],
+      "evidence": [
+        "AuthService constructor injects IUsersRepository (line 28) and IWalletsRepository (line 29) directly, while also injecting IAdjutorService (line 27). The adjacent UsersService only exposes create() and getById(), lacking findByEmail() \u2014 suggesting the UsersService interface is incomplete for the domain's actual cross-module needs."
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "design_coherence",
+      "identifier": "dim-2",
+      "summary": "The getMyWallet handler returns res.status(404).json({ message: 'No wallet found for this user' }) directly, while every other controller in the codebase lets the service layer throw domain errors (NotFoundError, ForbiddenError) which are caught by the centralized error middleware. This breaks the error-handling contract established by all other modules.",
+      "confidence": "low",
+      "suggestion": "Fix: The getMyWallet handler returns res.status(404).json({ message: 'No wallet found for this user' }) directly, while every other controller in the codebase lets the service layer throw domain errors (NotFoundError, ForbiddenError) which are caught by the centralized error middleware. This breaks the error-handling contract established by all other modules.",
+      "related_files": [
+        "src/modules/wallets/wallets.controller.ts:22-29"
+      ],
+      "evidence": [
+        "All other controllers follow the pattern: service throws error \u2192 catch(error) \u2192 next(error). WalletsController.getMyWallet is the only handler that manually constructs a 404 response inline, producing a different response shape ({ message } vs { message, code }) than the error middleware would generate."
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "design_coherence",
+      "identifier": "dim-3",
+      "summary": "LedgerController.list() constructs LedgerQueryDTO by casting req.query.walletId as string, while other controllers pass req.body or req.params directly to their service methods and rely on the validation middleware to ensure correct types. The ledger query schema validates the input via Zod, but the controller re-extracts values manually instead of using the validated body/query/params object.",
+      "confidence": "low",
+      "suggestion": "Fix: LedgerController.list() constructs LedgerQueryDTO by casting req.query.walletId as string, while other controllers pass req.body or req.params directly to their service methods and rely on the validation middleware to ensure correct types. The ledger query schema validates the input via Zod, but the controller re-extracts values manually instead of using the validated body/query/params object.",
+      "related_files": [
+        "src/modules/ledger/ledger.controller.ts:10-22"
+      ],
+      "evidence": [
+        "Compare: UsersController.create passes req.body directly (line 12), TransfersController.create passes req.body with idempotencyKey (line 12-14). LedgerController manually builds: { walletId: req.query.walletId as string, page: req.query.page ? Number(req.query.page) : undefined, limit: req.query.limit ? Number(req.query.limit) : undefined }. This duplicates the Zod schema's coercion logic and introduces unsafe 'as string' cast."
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "design_coherence",
+      "identifier": "dim-4",
+      "summary": "ILedgerRepository uses insert() for creating entries while ITransfersRepository, IUsersRepository, and IWalletsRepository all use create() for the same operation. Both serve the same semantic purpose (persist a new record). The naming divergence is minor but breaks the otherwise consistent repository interface vocabulary.",
+      "confidence": "medium",
+      "suggestion": "Fix: ILedgerRepository uses insert() for creating entries while ITransfersRepository, IUsersRepository, and IWalletsRepository all use create() for the same operation. Both serve the same semantic purpose (persist a new record). The naming divergence is minor but breaks the otherwise consistent repository interface vocabulary.",
+      "related_files": [
+        "src/modules/ledger/ledger.repository.ts:22 vs src/modules/transfers/transfers.repository.ts:11"
+      ],
+      "evidence": [
+        "ILedgerRepository.insert(ledger.types.ts:33) vs ITransfersRepository.create(transfers.types.ts:20), IUsersRepository.create(users.types.ts:25), IWalletsRepository.create(wallets.types.ts:24). All four represent 'create a new record in the database'."
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "contract_coherence",
+      "identifier": "contract_coherence::src/modules/users/users.types.ts::findByEmail_param_name",
+      "summary": "IUsersRepository.findByEmail(id: string) names its parameter 'id', but the function's purpose is to look up by email. The parameter name contradicts the function's contract. Every implementer and caller must mentally translate 'id' \u2192 'email', creating a semantic mismatch between the declared API and its intent.",
+      "confidence": "medium",
+      "suggestion": "Rename the parameter in the interface from `id` to `email` so the type declaration matches its semantic contract.",
+      "related_files": [
+        "src/modules/users/users.types.ts"
+      ],
+      "evidence": [
+        "IUsersRepository.findByEmail(id: string) names its parameter 'id' but the function's purpose is to look up by email."
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "contract_coherence",
+      "identifier": "contract_coherence::src/modules/users/users.types.ts::CreateUserDTO_password_contract",
+      "summary": "The CreateUserDTO defines `password: string` with the comment 'raw value; caller must hash before passing'. However, the only caller (AuthService at auth.service.ts:56) passes the already-hashed value: `{ email: data.email, password: passwordHash }`. The repository then stores `password_hash: data.password`. The DTO's documented contract ('raw value') contradicts the actual contract (receives a hash). This is a docstring/signature divergence that misleads future callers.",
+      "confidence": "medium",
+      "suggestion": "Either rename the field to `passwordHash` to reflect what it actually receives, or update the AuthService to accept raw passwords and hash inside the service layer. The current contract is misleading.",
+      "related_files": [
+        "src/modules/users/users.types.ts"
+      ],
+      "evidence": [
+        "CreateUserDTO defines `password: string` with comment 'raw value; caller must hash before passing', but AuthService passes the already-hashed value at auth.service.ts:56."
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "contract_coherence",
+      "identifier": "contract_coherence::src/shared/middleware/logger.middleware.ts::as_any_type_assertion",
+      "summary": "loggerMiddleware uses `logger as any` to pass the pino logger to pinoHttp. This is a type assertion that silences a real type incompatibility between the pino and pino-http type definitions, rather than resolving the underlying mismatch.",
+      "confidence": "low",
+      "suggestion": "If pino and pino-http types are compatible at runtime, use a narrower cast (e.g., `Parameters<typeof pinoHttp>[0]['logger']`). If they genuinely differ, the `as any` should at minimum be documented with the reason.",
+      "related_files": [
+        "src/shared/middleware/logger.middleware.ts"
+      ],
+      "evidence": [
+        "loggerMiddleware uses `logger as any` to pass the pino logger to pinoHttp, silencing a real type incompatibility."
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "contract_coherence",
+      "identifier": "contract_coherence::src/modules/wallets/wallets.repository.ts::as_type_assertions",
+      "summary": "WalletsRepository uses `(row as Wallet)` in findById, findByUserId, and findByIdForUpdate. These assertions trust that DB column names (`user_id`, `created_at`, etc.) map to camelCase interface fields (`userId`, `createdAt`) at runtime. If the DB schema changes or Knex mapping drifts, these casts would silently produce incorrect objects rather than type errors.",
+      "confidence": "low",
+      "suggestion": "This is a common pattern in Knex-based repositories. If the project adopts a column-mapping convention or uses `snakeCase` Knex configuration, the risk is minimal. Otherwise, consider explicit field mapping instead of blanket casts.",
+      "related_files": [
+        "src/modules/wallets/wallets.repository.ts"
+      ],
+      "evidence": [
+        "WalletsRepository uses `(row as Wallet)` in findById, findByUserId, and findByIdForUpdate, trusting DB column names map to camelCase interface fields at runtime."
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "type_safety",
+      "identifier": "type_safety_001",
+      "summary": "The pino logger is cast to `any` to satisfy pinoHttp's type signature. This defeats TypeScript's type checking on the logger instance passed to pinoHttp and silences any type mismatch between pino and pino-http.",
+      "confidence": "medium",
+      "suggestion": "Use pino's `PinoLogger` type or `pino.Logger` explicitly. If pino-http's types are incompatible with the pino version, pin compatible versions rather than casting to `any`.",
+      "related_files": [
+        "src/shared/middleware/logger.middleware.ts"
+      ],
+      "evidence": [
+        "export const loggerMiddleware = () => pinoHttp({ logger: logger as any });"
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "type_safety",
+      "identifier": "type_safety_002",
+      "summary": "jwt.verify() returns `string | JwtPayload`, which is cast directly to `AuthPayload` (with `sub` and `email` fields) without verifying the decoded token actually contains those fields. If a JWT is issued with different claims, this produces a runtime error downstream when `req.user.sub` is accessed, rather than failing at the boundary.",
+      "confidence": "medium",
+      "suggestion": "Add a runtime guard after decoding: check that the payload is an object and has `sub` and `email` string properties before assigning to `req.user`. Alternatively, use a Zod schema to validate the decoded token shape at this boundary.",
+      "related_files": [
+        "src/shared/middleware/auth.middleware.ts"
+      ],
+      "evidence": [
+        "const payload = jwt.verify(token, env.JWT_SECRET) as AuthPayload;"
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "type_safety",
+      "identifier": "type_safety_003",
+      "summary": "Multiple controllers use `req.user!.sub` to access the authenticated user. The Express declaration correctly types `user` as optional (`user?: AuthPayload`), but the `!` assertion tells TypeScript to trust the caller. While auth middleware is applied to all these routes, TypeScript cannot verify this invariant \u00e2\u20ac\u201d a future route added without auth middleware would silently pass type checking but crash at runtime.",
+      "confidence": "low",
+      "suggestion": "Extract a `requireAuth` helper that returns a narrowed `Request & { user: AuthPayload }` type after asserting the user exists, or define an `AuthenticatedRequest` type used by all protected route handlers. This makes the auth contract explicit in the type system.",
+      "related_files": [
+        "src/modules/wallets/wallets.controller.ts"
+      ],
+      "evidence": [
+        "userId: req.user!.sub (wallets.controller.ts:13), req.user!.sub (wallets.controller.ts:24), req.user!.sub (wallets.controller.ts:34), req.user!.sub (ledger.controller.ts:17), req.user!.sub (transfers.controller.ts:14)"
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "type_safety",
+      "identifier": "type_safety_004",
+      "summary": "Repository methods cast raw Knex query results to domain types (e.g., `row as Wallet`) without runtime shape validation. If the database schema drifts from the TypeScript interface \u00e2\u20ac\u201d a renamed column, a missing field \u00e2\u20ac\u201d TypeScript won't catch it and the application will serve partially-populated objects. This pattern is repeated across all repositories (wallets, users, transfers).",
+      "confidence": "low",
+      "suggestion": "Consider a thin runtime mapper or Zod schema for DB row \u00e2\u2020\u2019 domain type conversion at repository boundaries. Even a simple destructuring with explicit field extraction (rather than a wholesale cast) would narrow the blast radius of schema mismatches.",
+      "related_files": [
+        "src/modules/wallets/wallets.repository.ts"
+      ],
+      "evidence": [
+        "return (row as Wallet) ?? null; (wallets.repository.ts:31), return (row as User) ?? null; (users.repository.ts:32), return (row as Transfer) ?? null; (transfers.repository.ts:38)"
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "type_safety",
+      "identifier": "type_safety_005",
+      "summary": "req.query.walletId is cast to `string` without type narrowing. Query parameters are typed as `string | ParsedQs | ...` in Express. While the Zod validation middleware runs before this handler and reassigns the parsed result, TypeScript doesn't know about this middleware chain, so the cast masks a potential type mismatch if the middleware order changes.",
+      "confidence": "low",
+      "suggestion": "After Zod validation, the validated data could be passed via a typed request extension (e.g., `req.validated`) rather than reassigning to `req.query` and casting. This makes the data flow type-safe without relying on middleware ordering assumptions.",
+      "related_files": [
+        "src/modules/ledger/ledger.controller.ts"
+      ],
+      "evidence": [
+        "walletId: req.query.walletId as string,"
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "type_safety",
+      "identifier": "type_safety_006",
+      "summary": "req.idempotencyKey is cast to `string` in the controller. The `express.d.ts` declaration types it as `string | undefined`, and while the `requireIdempotencyKey` middleware guarantees it's set, the type system doesn't encode this dependency.",
+      "confidence": "low",
+      "suggestion": "Same as type_safety_005 \u00e2\u20ac\u201d use a validated request type that encodes the post-middleware state, eliminating the need for assertions.",
+      "related_files": [
+        "src/modules/transfers/transfers.controller.ts"
+      ],
+      "evidence": [
+        "idempotencyKey: req.idempotencyKey as string,"
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor"
+    }
+  ],
+  "review_quality": {
+    "batch_count": 19,
+    "dimension_coverage": 0.045,
+    "evidence_density": 0.308,
+    "high_score_missing_issue_note": 3
+  },
+  "review_scope": {
+    "reviewed_files_count": 0,
+    "successful_batch_count": 19,
+    "full_sweep_included": false,
+    "total_files": 56,
+    "imported_dimensions": [
+      "ai_generated_debt",
+      "api_surface_coherence",
+      "authorization_consistency",
+      "contract_coherence",
+      "cross_module_architecture",
+      "design_coherence",
+      "error_consistency",
+      "high_level_elegance",
+      "incomplete_migration",
+      "initialization_coupling",
+      "logic_clarity",
+      "low_level_elegance",
+      "mid_level_elegance",
+      "naming_quality",
+      "package_organization",
+      "test_strategy",
+      "type_safety",
+      "convention_outlier"
+    ]
+  },
+  "provenance": {
+    "kind": "blind_review_batch_import",
+    "blind": true,
+    "runner": "dry-run",
+    "run_stamp": "20260717_145807",
+    "created_at": "2026-07-17T15:58:18+00:00",
+    "batch_count": 19,
+    "batch_indexes": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20
+    ],
+    "packet_path": "C:\\Users\\Owner\\.gemini\\antigravity\\scratch\\DemoCredit\\.desloppify\\review_packet_blind.json",
+    "packet_sha256": "71ed00a68f3381bec29539aa2bcb2cf28166e40983d526c029c416af4485def3"
+  },
+  "assessment_coverage": {
+    "scored_dimensions": [
+      "naming_quality",
+      "logic_clarity",
+      "type_safety",
+      "contract_coherence",
+      "error_consistency",
+      "abstraction_fitness",
+      "ai_generated_debt",
+      "high_level_elegance",
+      "mid_level_elegance",
+      "low_level_elegance",
+      "cross_module_architecture",
+      "initialization_coupling",
+      "convention_outlier",
+      "dependency_health",
+      "test_strategy",
+      "api_surface_coherence",
+      "authorization_consistency",
+      "incomplete_migration",
+      "package_organization",
+      "design_coherence"
+    ],
+    "selected_dimensions": [
+      "naming_quality",
+      "logic_clarity",
+      "type_safety",
+      "contract_coherence",
+      "error_consistency",
+      "abstraction_fitness",
+      "ai_generated_debt",
+      "high_level_elegance",
+      "mid_level_elegance",
+      "low_level_elegance",
+      "cross_module_architecture",
+      "initialization_coupling",
+      "convention_outlier",
+      "dependency_health",
+      "test_strategy",
+      "api_surface_coherence",
+      "authorization_consistency",
+      "incomplete_migration",
+      "package_organization",
+      "design_coherence"
+    ],
+    "imported_dimensions": [
+      "ai_generated_debt",
+      "api_surface_coherence",
+      "authorization_consistency",
+      "contract_coherence",
+      "cross_module_architecture",
+      "design_coherence",
+      "error_consistency",
+      "high_level_elegance",
+      "incomplete_migration",
+      "initialization_coupling",
+      "logic_clarity",
+      "low_level_elegance",
+      "mid_level_elegance",
+      "naming_quality",
+      "package_organization",
+      "test_strategy",
+      "type_safety"
+    ],
+    "missing_dimensions": [
+      "abstraction_fitness",
+      "convention_outlier",
+      "dependency_health"
+    ]
+  }
+}

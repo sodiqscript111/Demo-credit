@@ -1,0 +1,45 @@
+﻿{
+    "batch": "naming_quality",
+    "batch_index": 5,
+    "assessments": {"naming_quality": 92.0},
+    "dimension_notes": {
+        "naming_quality": {
+            "fix_scope": "multi_file_refactor",
+            "evidence": ["Excellent naming quality across the codebase. Functions, variables, types, and classes consistently communicate intent using descriptive, domain-aligned names. Minor redundant naming in one type alias."],
+            "impact_scope": "codebase",
+            "confidence": "high"
+        }
+    },
+    "dimension_judgment": {
+        "naming_quality": {
+            "score_rationale": "Score of 92 reflects excellent naming across the codebase with only minor redundancy in adjutor type names.",
+            "dimension_character": "Excellent naming quality across the codebase. Functions, variables, types, and classes consistently communicate intent using descriptive, domain-aligned names. Minor redundant naming in one type alias."
+        }
+    },
+    "issues": [
+        {
+            "impact_scope": "local",
+            "dimension": "naming_quality",
+            "evidence": ["Redundant 'Karma' repetition — type name doubles the domain qualifier. A field named karma_type: KarmaKarmaType reads as 'karma type karma type'."],
+            "suggestion": "Rename to KarmaType to eliminate redundancy. The enclosing interface already provides the Karma context.",
+            "summary": "KarmaKarmaType has redundant Karma prefix creating 'karma type karma type' when read in context",
+            "fix_scope": "single_edit",
+            "confidence": "medium",
+            "related_files": ["src/modules/adjutor/adjutor.types.ts"],
+            "identifier": "dim-1"
+        },
+        {
+            "impact_scope": "local",
+            "dimension": "naming_quality",
+            "evidence": ["Similarly redundant with the Karma prefix when used inside KarmaData as karma_identity_type: KarmaIdentityType."],
+            "suggestion": "Rename to IdentityType for the same reason as KarmaKarmaType.",
+            "summary": "KarmaIdentityType has redundant Karma prefix creating 'karma identity type karma identity type' when read in context",
+            "fix_scope": "single_edit",
+            "confidence": "medium",
+            "related_files": ["src/modules/adjutor/adjutor.types.ts"],
+            "identifier": "dim-2"
+        }
+    ],
+    "retrospective": {},
+    "context_updates": {}
+}

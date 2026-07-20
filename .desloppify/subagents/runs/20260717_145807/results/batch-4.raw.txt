@@ -1,0 +1,61 @@
+﻿{
+    "batch":  "error_consistency",
+    "batch_index":  4,
+    "assessments":  {
+                        "error_consistency":  80
+                    },
+    "dimension_notes":  {
+                            "error_consistency":  {
+                                                      "fix_scope":  "multi_file_refactor",
+                                                      "evidence":  [
+                                                                       "Most error handling uses AppError subclasses (NotFoundError, ForbiddenError) processed by centralized middleware, but one controller manually writes a 404 JSON response bypassing the error pipeline."
+                                                                   ],
+                                                      "impact_scope":  "codebase",
+                                                      "confidence":  "high"
+                                                  }
+                        },
+    "dimension_judgment":  {
+                               "error_consistency":  {
+                                                         "score_rationale":  "Score of 80 reflects the assessment of error_consistency based on the findings and summary.",
+                                                         "dimension_character":  "Error handling is largely consistent across the codebase, with most services throwing AppError subclasses that are formatted uniformly by the error middleware. The wallets controller is the sole outlier, manually constructing a 404 response that produces a different shape than every other error path. This inconsistency is isolated but breaks the centralized error contract."
+                                                     }
+                           },
+    "issues":  [
+                   {
+                       "impact_scope":  "codebase",
+                       "dimension":  "error_consistency",
+                       "evidence":  [
+                                        "The only controller that manually writes an error response (res.status(404).json({ message: \u0027No wallet found for this user\u0027 })) instead of throwing an AppError subclass. Every other not-found case across services (users.service.ts:17, wallets.service.ts:19, transfers.service.ts:52-53, transfers.service.ts:96, ledger.service.ts:17) throws NotFoundError, which the error middleware formats consistently with { message, code }."
+                                    ],
+                       "suggestion":  "Replace the manual 404 response with: throw new NotFoundError(\u0027No wallet found for this user\u0027). The error middleware will format it consistently with all other errors.",
+                       "summary":  "getMyWallet returns a raw 404 JSON response instead of throwing NotFoundError, bypassing centralized error middleware and producing a different response shape (missing \u0027code\u0027 field) than every other error in the codebase.",
+                       "fix_scope":  "multi_file_refactor",
+                       "confidence":  "medium",
+                       "related_files":  [
+                                             "src/modules/wallets/wallets.controller.ts"
+                                         ],
+                       "identifier":  "err-1"
+                   },
+                   {
+                       "impact_scope":  "codebase",
+                       "dimension":  "error_consistency",
+                       "evidence":  [
+                                        "throw new Error(`Adjutor server error: ${response.status}`) at line 101 is caught by withRetry, and the eventual catch in isBlacklisted (line 45-52) wraps it into AppError(503). The flow is correct, but the internal bare Error is a domain-specific HTTP status error that would be better expressed as a transient error marker rather than a plain Error."
+                                    ],
+                       "suggestion":  "No change required \u2014 the wrapping is correct. Consider a named RetryableError class if the pattern is reused elsewhere, but the current code is functionally sound.",
+                       "summary":  "fetchKarma throws a bare Error for 5xx responses used as a retry signal, which is fine for internal retry logic but could leak a non-AppError to callers if withRetry\u0027s error is somehow not caught upstream.",
+                       "fix_scope":  "multi_file_refactor",
+                       "confidence":  "low",
+                       "related_files":  [
+                                             "src/modules/adjutor/adjutor.service.ts"
+                                         ],
+                       "identifier":  "err-2"
+                   }
+               ],
+    "retrospective":  {
+
+                      },
+    "context_updates":  {
+
+                        }
+}

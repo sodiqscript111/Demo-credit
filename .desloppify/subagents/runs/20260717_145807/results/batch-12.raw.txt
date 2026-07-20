@@ -1,0 +1,83 @@
+﻿{
+    "batch":  "authorization_consistency",
+    "batch_index":  12,
+    "assessments":  {
+                        "authorization_consistency":  60
+                    },
+    "dimension_notes":  {
+                            "authorization_consistency":  {
+                                                              "fix_scope":  "multi_file_refactor",
+                                                              "evidence":  [
+                                                                               "The codebase has a solid auth middleware foundation and correct ownership checks on the write path (transfers.create) and wallet-scoped reads (wallets.getById, ledger.listEntries). Two read paths lack ownership gates: GET /transfers/:id and GET /users/:id allow any authenticated user to fetch records belonging to others. The users module also uses a different auth application pattern (per-route vs router-level), which is functionally fine but increases the chance of a new route being added without auth."
+                                                                           ],
+                                                              "impact_scope":  "codebase",
+                                                              "confidence":  "high"
+                                                          }
+                        },
+    "dimension_judgment":  {
+                               "authorization_consistency":  {
+                                                                 "score_rationale":  "Score of 60 reflects the assessment of authorization_consistency based on the findings and summary.",
+                                                                 "dimension_character":  "The codebase has a solid auth middleware foundation and correct ownership checks on the write path (transfers.create) and wallet-scoped reads (wallets.getById, ledger.listEntries). Two read paths lack ownership gates: GET /transfers/:id and GET /users/:id allow any authenticated user to fetch records belonging to others. The users module also uses a different auth application pattern (per-route vs router-level), which is functionally fine but increases the chance of a new route being added without auth."
+                                                             }
+                           },
+    "issues":  [
+                   {
+                       "impact_scope":  "codebase",
+                       "dimension":  "authorization_consistency",
+                       "evidence":  [
+                                        "src/modules/transfers/transfers.service.ts:94-98 â€” getById returns transfer with no ownership gate",
+                                        "src/modules/transfers/transfers.controller.ts:22-28 â€” calls getById(req.params.id) without req.user",
+                                        "src/modules/transfers/transfers.types.ts â€” ITransfersService.getById(id: string) has no requestingUserId param"
+                                    ],
+                       "suggestion":  "Fix: TransfersService.getById fetches any transfer by ID without verifying the requesting user owns either the source or destination wallet. Any authenticated user can enumerate transfer records. The ITransfersService.getById interface accepts only `id: string` with no requestingUserId parameter, and the controller passes no auth identity through.",
+                       "summary":  "TransfersService.getById fetches any transfer by ID without verifying the requesting user owns either the source or destination wallet. Any authenticated user can enumerate transfer records. The ITransfersService.getById interface accepts only `id: string` with no requestingUserId parameter, and the controller passes no auth identity through.",
+                       "fix_scope":  "multi_file_refactor",
+                       "confidence":  "high",
+                       "related_files":  [
+                                             "src/modules/transfers/transfers.controller.ts"
+                                         ],
+                       "identifier":  "auth-1"
+                   },
+                   {
+                       "impact_scope":  "codebase",
+                       "dimension":  "authorization_consistency",
+                       "evidence":  [
+                                        "src/modules/users/users.service.ts:14-20 â€” getById returns user with no ownership gate",
+                                        "src/modules/users/users.controller.ts:19-26 â€” calls getById(req.params.id) without req.user",
+                                        "src/modules/users/users.types.ts â€” IUsersService.getById(id: string) has no requestingUserId param"
+                                    ],
+                       "suggestion":  "Fix: UsersService.getById returns any user by ID without verifying the requesting user is the target. The route is auth-protected (users.routes.ts:12) so only authenticated users hit this, but any authenticated user can look up any other user\u0027s email and timestamps. The IUsersService.getById interface accepts only `id: string` with no requestingUserId.",
+                       "summary":  "UsersService.getById returns any user by ID without verifying the requesting user is the target. The route is auth-protected (users.routes.ts:12) so only authenticated users hit this, but any authenticated user can look up any other user\u0027s email and timestamps. The IUsersService.getById interface accepts only `id: string` with no requestingUserId.",
+                       "fix_scope":  "multi_file_refactor",
+                       "confidence":  "medium",
+                       "related_files":  [
+                                             "src/modules/users/users.controller.ts"
+                                         ],
+                       "identifier":  "auth-2"
+                   },
+                   {
+                       "impact_scope":  "codebase",
+                       "dimension":  "authorization_consistency",
+                       "evidence":  [
+                                        "src/modules/users/users.routes.ts:11-12 â€” authMiddleware applied per-route",
+                                        "src/modules/wallets/wallets.routes.ts:11 â€” router.use(authMiddleware) at top",
+                                        "src/modules/transfers/transfers.routes.ts:12 â€” router.use(authMiddleware) at top",
+                                        "src/modules/ledger/ledger.routes.ts:11 â€” router.use(authMiddleware) at top"
+                                    ],
+                       "suggestion":  "Fix: Users module applies authMiddleware per-route (only on GET /:id) while wallets, transfers, and ledger apply router.use(authMiddleware) at the router level. This is functionally correct â€” POST /users is public registration â€” but creates a pattern inconsistency. A developer adding a new users route may not notice that auth is opt-in here, not opt-out.",
+                       "summary":  "Users module applies authMiddleware per-route (only on GET /:id) while wallets, transfers, and ledger apply router.use(authMiddleware) at the router level. This is functionally correct â€” POST /users is public registration â€” but creates a pattern inconsistency. A developer adding a new users route may not notice that auth is opt-in here, not opt-out.",
+                       "fix_scope":  "multi_file_refactor",
+                       "confidence":  "low",
+                       "related_files":  [
+                                             "src/modules/users/users.routes.ts"
+                                         ],
+                       "identifier":  "auth-3"
+                   }
+               ],
+    "retrospective":  {
+
+                      },
+    "context_updates":  {
+
+                        }
+}

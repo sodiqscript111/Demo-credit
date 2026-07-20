@@ -1,0 +1,91 @@
+﻿{
+    "batch":  "package_organization",
+    "batch_index":  15,
+    "assessments":  {
+                        "package_organization":  80
+                    },
+    "dimension_notes":  {
+                            "package_organization":  {
+                                                         "fix_scope":  "multi_file_refactor",
+                                                         "evidence":  [
+                                                                          "Well-organized small project with clean top-level separation and consistent module structure. Minor issues: adjutor module is structurally thinner than siblings (justified as an external service client), and a few empty placeholder directories exist."
+                                                                      ],
+                                                         "impact_scope":  "codebase",
+                                                         "confidence":  "high"
+                                                     }
+                        },
+    "dimension_judgment":  {
+                               "package_organization":  {
+                                                            "score_rationale":  "Score of 80 reflects the assessment of package_organization based on the findings and summary.",
+                                                            "dimension_character":  "Well-organized small project with clean top-level separation and consistent module structure. Minor issues: adjutor module is structurally thinner than siblings (justified as an external service client), and a few empty placeholder directories exist."
+                                                        }
+                           },
+    "issues":  [
+                   {
+                       "impact_scope":  "codebase",
+                       "dimension":  "package_organization",
+                       "evidence":  [
+                                        "adjutor/ contains adjutor.service.ts and adjutor.types.ts only; all other modules have controller/routes/repository/validator files"
+                                    ],
+                       "suggestion":  "Fix: adjutor module has only 2 files (service + types) while sibling modules have 5-6 files (controller, repository, routes, service, types, validator). This is a justified structural difference since adjutor is an external KYC service adapter consumed internally, not a domain entity with its own routes/DB persistence. No action needed.",
+                       "summary":  "adjutor module has only 2 files (service + types) while sibling modules have 5-6 files (controller, repository, routes, service, types, validator). This is a justified structural difference since adjutor is an external KYC service adapter consumed internally, not a domain entity with its own routes/DB persistence. No action needed.",
+                       "fix_scope":  "multi_file_refactor",
+                       "confidence":  "medium",
+                       "related_files":  [
+                                             "src/modules/adjutor/"
+                                         ],
+                       "identifier":  "dim-1"
+                   },
+                   {
+                       "impact_scope":  "codebase",
+                       "dimension":  "package_organization",
+                       "evidence":  [
+                                        "src/database/seeds/ is empty (0 files)"
+                                    ],
+                       "suggestion":  "Fix: Empty seeds directory exists with no seed files. Referenced by knexfile.ts configuration across all environments. Adds navigational noise without content.",
+                       "summary":  "Empty seeds directory exists with no seed files. Referenced by knexfile.ts configuration across all environments. Adds navigational noise without content.",
+                       "fix_scope":  "multi_file_refactor",
+                       "confidence":  "medium",
+                       "related_files":  [
+                                             "src/database/seeds/"
+                                         ],
+                       "identifier":  "dim-2"
+                   },
+                   {
+                       "impact_scope":  "codebase",
+                       "dimension":  "package_organization",
+                       "evidence":  [
+                                        "tests/integration/ is empty (0 files)"
+                                    ],
+                       "suggestion":  "Fix: Empty integration test directory exists with no test files. Indicates an incomplete test strategy but is not a structural organization problem in itself.",
+                       "summary":  "Empty integration test directory exists with no test files. Indicates an incomplete test strategy but is not a structural organization problem in itself.",
+                       "fix_scope":  "multi_file_refactor",
+                       "confidence":  "medium",
+                       "related_files":  [
+                                             "tests/integration/"
+                                         ],
+                       "identifier":  "dim-3"
+                   },
+                   {
+                       "impact_scope":  "codebase",
+                       "dimension":  "package_organization",
+                       "evidence":  [
+                                        "knexfile.ts fan_in: 0, fan_out: 0; referenced by knex CLI commands in package.json scripts"
+                                    ],
+                       "suggestion":  "Fix: Root-level knexfile.ts has 0 importers and sits outside src/. However, Knex CLI looks for knexfile.ts at project root by default â€” this is a framework-imposed placement, not an organizational issue.",
+                       "summary":  "Root-level knexfile.ts has 0 importers and sits outside src/. However, Knex CLI looks for knexfile.ts at project root by default â€” this is a framework-imposed placement, not an organizational issue.",
+                       "fix_scope":  "multi_file_refactor",
+                       "confidence":  "low",
+                       "related_files":  [
+                                             "knexfile.ts"
+                                         ],
+                       "identifier":  "dim-4"
+                   }
+               ],
+    "retrospective":  {
+
+                      },
+    "context_updates":  {
+
+                        }
+}
