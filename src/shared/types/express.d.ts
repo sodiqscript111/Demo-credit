@@ -1,4 +1,4 @@
-import type { AuthPayload } from './common';
+import type { AuthPayload } from "./common";
 
 declare global {
   namespace Express {

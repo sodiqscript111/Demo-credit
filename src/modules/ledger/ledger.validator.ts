@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 export const ledgerQuerySchema = z.object({
   walletId: z.string().uuid(),

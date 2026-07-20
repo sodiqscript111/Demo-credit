@@ -1,14 +1,17 @@
-import type { Request, Response, NextFunction } from 'express';
-import { inject, injectable } from 'tsyringe';
-import { TOKENS } from '../../shared/utils/constants';
-import { NotFoundError } from '../../shared/errors/NotFoundError';
-import type { IWalletsService } from './wallets.types';
+import type { Request, Response, NextFunction } from "express";
+import { inject, injectable } from "tsyringe";
+import { TOKENS } from "../../shared/utils/constants";
+import { NotFoundError } from "../../shared/errors/NotFoundError";
+import type { IWalletsService } from "./wallets.types";
 
-import { asyncHandler } from '../../shared/utils/asyncHandler';
+import { asyncHandler } from "../../shared/utils/asyncHandler";
 
 @injectable()
 export class WalletsController {
-  constructor(@inject(TOKENS.WalletsService) private readonly walletsService: IWalletsService) {}
+  constructor(
+    @inject(TOKENS.WalletsService)
+    private readonly walletsService: IWalletsService,
+  ) {}
 
   create = asyncHandler(async (req: Request, res: Response) => {
     const result = await this.walletsService.create({
@@ -20,12 +23,15 @@ export class WalletsController {
 
   getMyWallet = asyncHandler(async (req: Request, res: Response) => {
     const result = await this.walletsService.getByUserId(req.user!.sub);
-    if (!result) throw new NotFoundError('No wallet found for this user');
+    if (!result) throw new NotFoundError("No wallet found for this user");
     return res.status(200).json({ data: result });
   });
 
   getById = asyncHandler(async (req: Request, res: Response) => {
-    const result = await this.walletsService.getById(req.params.id, req.user!.sub);
+    const result = await this.walletsService.getById(
+      req.params.id,
+      req.user!.sub,
+    );
     return res.status(200).json({ data: result });
   });
 

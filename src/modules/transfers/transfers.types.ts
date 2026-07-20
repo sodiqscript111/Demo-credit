@@ -1,11 +1,11 @@
-import type { Knex } from 'knex';
+import type { Knex } from "knex";
 
 export interface Transfer {
   id: string;
   fromWalletId: string;
   toWalletId: string;
   amount: string;
-  status: 'pending' | 'completed' | 'failed';
+  status: "pending" | "completed" | "failed";
   idempotencyKey: string;
   createdAt: Date;
 }

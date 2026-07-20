@@ -1,13 +1,16 @@
-import type { Request, Response, NextFunction } from 'express';
-import { inject, injectable } from 'tsyringe';
-import { TOKENS } from '../../shared/utils/constants';
-import type { ILedgerService, LedgerQueryDTO } from './ledger.types';
+import type { Request, Response, NextFunction } from "express";
+import { inject, injectable } from "tsyringe";
+import { TOKENS } from "../../shared/utils/constants";
+import type { ILedgerService, LedgerQueryDTO } from "./ledger.types";
 
-import { asyncHandler } from '../../shared/utils/asyncHandler';
+import { asyncHandler } from "../../shared/utils/asyncHandler";
 
 @injectable()
 export class LedgerController {
-  constructor(@inject(TOKENS.LedgerService) private readonly ledgerService: ILedgerService) {}
+  constructor(
+    @inject(TOKENS.LedgerService)
+    private readonly ledgerService: ILedgerService,
+  ) {}
 
   list = asyncHandler(async (req: Request, res: Response) => {
     const query: LedgerQueryDTO = {

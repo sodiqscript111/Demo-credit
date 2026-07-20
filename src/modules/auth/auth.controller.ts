@@ -1,13 +1,15 @@
-import type { Request, Response, NextFunction } from 'express';
-import { inject, injectable } from 'tsyringe';
-import { TOKENS } from '../../shared/utils/constants';
-import type { IAuthService } from './auth.types';
+import type { Request, Response, NextFunction } from "express";
+import { inject, injectable } from "tsyringe";
+import { TOKENS } from "../../shared/utils/constants";
+import type { IAuthService } from "./auth.types";
 
-import { asyncHandler } from '../../shared/utils/asyncHandler';
+import { asyncHandler } from "../../shared/utils/asyncHandler";
 
 @injectable()
 export class AuthController {
-  constructor(@inject(TOKENS.AuthService) private readonly authService: IAuthService) {}
+  constructor(
+    @inject(TOKENS.AuthService) private readonly authService: IAuthService,
+  ) {}
 
   login = asyncHandler(async (req: Request, res: Response) => {
     const result = await this.authService.login(req.body);

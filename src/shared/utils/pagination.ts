@@ -1,4 +1,4 @@
-import type { PaginationParams } from '../types/common';
+import type { PaginationParams } from "../types/common";
 
 export const normalizePagination = (params: PaginationParams) => {
   const page = Math.max(1, params.page ?? 1);

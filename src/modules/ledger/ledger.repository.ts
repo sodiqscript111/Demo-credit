@@ -1,9 +1,14 @@
-import { inject, injectable } from 'tsyringe';
-import type { Knex } from 'knex';
-import { TOKENS } from '../../shared/utils/constants';
-import { generateId } from '../../shared/utils/uuid';
-import { normalizePagination } from '../../shared/utils/pagination';
-import type { CreateLedgerEntryDTO, ILedgerRepository, LedgerEntry, LedgerQueryDTO } from './ledger.types';
+import { inject, injectable } from "tsyringe";
+import type { Knex } from "knex";
+import { TOKENS } from "../../shared/utils/constants";
+import { generateId } from "../../shared/utils/uuid";
+import { normalizePagination } from "../../shared/utils/pagination";
+import type {
+  CreateLedgerEntryDTO,
+  ILedgerRepository,
+  LedgerEntry,
+  LedgerQueryDTO,
+} from "./ledger.types";
 
 @injectable()
 export class LedgerRepository implements ILedgerRepository {
@@ -12,18 +17,21 @@ export class LedgerRepository implements ILedgerRepository {
   async listByWalletId(query: LedgerQueryDTO): Promise<LedgerEntry[]> {
     const { limit, offset } = normalizePagination(query);
 
-    return this.db<LedgerEntry>('ledger_entries')
-      .where('wallet_id', query.walletId)
-      .orderBy('created_at', 'desc')
+    return this.db<LedgerEntry>("ledger_entries")
+      .where("wallet_id", query.walletId)
+      .orderBy("created_at", "desc")
       .limit(limit)
       .offset(offset);
   }
 
-  async create(entry: CreateLedgerEntryDTO, trx: Knex.Transaction): Promise<LedgerEntry> {
+  async create(
+    entry: CreateLedgerEntryDTO,
+    trx: Knex.Transaction,
+  ): Promise<LedgerEntry> {
     const id = generateId();
     const createdAt = new Date();
 
-    await trx('ledger_entries').insert({
+    await trx("ledger_entries").insert({
       id,
       wallet_id: entry.walletId,
       transfer_id: entry.transferId,

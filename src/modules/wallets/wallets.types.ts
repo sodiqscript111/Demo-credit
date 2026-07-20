@@ -1,4 +1,4 @@
-import type { Knex } from 'knex';
+import type { Knex } from "knex";
 
 export interface Wallet {
   id: string;
@@ -34,7 +34,7 @@ export interface IWalletsRepository {
   create(data: CreateWalletDTO, trx?: Knex.Transaction): Promise<Wallet>;
   findById(id: string, trx?: Knex.Transaction): Promise<Wallet | null>;
   findByUserId(userId: string, trx?: Knex.Transaction): Promise<Wallet | null>;
-  /** Acquires a row-level lock — must be called inside a transaction */
+
   findByIdForUpdate(id: string, trx: Knex.Transaction): Promise<Wallet | null>;
   debit(id: string, amount: string, trx: Knex.Transaction): Promise<void>;
   credit(id: string, amount: string, trx: Knex.Transaction): Promise<void>;

@@ -32,13 +32,5 @@ export interface KarmaApiResponse {
 }
 
 export interface IAdjutorService {
-  /**
-   * Check if an identity (email, phone, BVN, etc.) exists in
-   * the Lendsqr Karma blacklist.
-   *
-   * Returns true  → identity IS blacklisted — deny onboarding.
-   * Returns false → identity is clean — allow onboarding.
-   * Throws        → Adjutor is unreachable (fail-closed: treat as blocked).
-   */
   isBlacklisted(identity: string): Promise<boolean>;
 }
