@@ -38,8 +38,10 @@ describe('Transfers Integration Tests', () => {
   });
 
   afterAll(async () => {
-    // Cleanup
+    // Disable FK checks for clean teardown, then re-enable
+    await db.raw('SET FOREIGN_KEY_CHECKS = 0');
     await db('users').where('email', 'in', [email1, email2]).del();
+    await db.raw('SET FOREIGN_KEY_CHECKS = 1');
     await db.destroy();
   });
 

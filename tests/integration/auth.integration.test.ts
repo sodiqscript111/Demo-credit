@@ -10,8 +10,10 @@ describe('Auth Integration Tests', () => {
   });
 
   afterAll(async () => {
-    // Clean up specific test data
+    // Disable FK checks for clean teardown, then re-enable
+    await db.raw('SET FOREIGN_KEY_CHECKS = 0');
     await db('users').where('email', 'like', 'test%@example.com').del();
+    await db.raw('SET FOREIGN_KEY_CHECKS = 1');
     await db.destroy();
   });
 
