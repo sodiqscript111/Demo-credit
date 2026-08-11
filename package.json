@@ -14,7 +14,7 @@
     "migrate:status": "ts-node ./node_modules/knex/bin/cli.js --knexfile knexfile.ts migrate:status",
     "seed:make": "ts-node ./node_modules/knex/bin/cli.js --knexfile knexfile.ts seed:make",
     "seed:run": "ts-node ./node_modules/knex/bin/cli.js --knexfile knexfile.ts seed:run",
-    "test": "jest --runInBand"
+    "test": "jest --runInBand --forceExit"
   },
   "keywords": [],
   "author": "",

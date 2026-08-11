@@ -12,6 +12,7 @@ describe('Auth Integration Tests', () => {
   afterAll(async () => {
     // Clean up specific test data
     await db('users').where('email', 'like', 'test%@example.com').del();
+    await db.destroy();
   });
 
   describe('POST /api/v1/auth/register', () => {
@@ -69,8 +70,6 @@ describe('Auth Integration Tests', () => {
           password,
         });
         
-      console.log('LOGIN RESPONSE:', response.body);
-
       expect(response.status).toBe(200);
       expect(response.body.data).toHaveProperty('accessToken');
     });

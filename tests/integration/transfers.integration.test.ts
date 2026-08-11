@@ -28,7 +28,6 @@ describe('Transfers Integration Tests', () => {
 
     // Get wallet IDs
     const walletRes1 = await request(app).get('/api/v1/wallets/me').set('Authorization', `Bearer ${token1}`);
-    console.log('WALLET RES:', walletRes1.body);
     wallet1Id = walletRes1.body.data.id;
 
     const walletRes2 = await request(app).get('/api/v1/wallets/me').set('Authorization', `Bearer ${token2}`);
