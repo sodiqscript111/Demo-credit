@@ -14,7 +14,7 @@ const sharedConfig = {
           emitDecoratorMetadata: true,
         },
       },
-    ],
+    ] as [string, Record<string, unknown>],
   },
 };
 
