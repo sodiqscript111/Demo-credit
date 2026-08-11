@@ -2,3 +2,12 @@ node_modules/
 dist/
 .env
 *.log
+k8s/secrets.yaml
+terraform/.terraform/
+terraform/terraform.tfvars
+terraform/*.tfstate
+terraform/*.tfstate.*
+terraform/tfplan
+*.tfplan
+terraform/crash.log
+terraform/crash.*.log

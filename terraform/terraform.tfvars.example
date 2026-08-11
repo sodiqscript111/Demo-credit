@@ -1,0 +1,19 @@
+# Copy to terraform.tfvars and fill in real values.
+# Do NOT commit terraform.tfvars.
+
+project_name = "demo-credit"
+environment  = "dev"
+location     = "francecentral"
+
+# Minimum-cost AKS shape. If Azure Student quota rejects B2s, try Standard_B2als_v2 or another available small VM.
+aks_node_count = 1
+aks_vm_size    = "Standard_B2s"
+
+# Stored in Azure Key Vault by Terraform.
+mysql_root_password = "replace_with_a_strong_mysql_password"
+jwt_secret          = "replace_with_a_long_random_jwt_secret"
+adjutor_api_key     = "replace_with_adjutor_key"
+
+cors_origin = "*"
+db_name     = "democredit"
+db_user     = "root"
