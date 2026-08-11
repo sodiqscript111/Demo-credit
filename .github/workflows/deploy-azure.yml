@@ -1,0 +1,120 @@
+name: Deploy to Azure AKS
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  APP_NAME: demo-credit-api
+  NAMESPACE: demo-credit
+
+  AZURE_RESOURCE_GROUP: demo-credit-dev-rg
+  AKS_CLUSTER_NAME: demo-credit-dev-aks
+
+  ACR_NAME: democreditdev6ho4npacr
+  ACR_LOGIN_SERVER: democreditdev6ho4npacr.azurecr.io
+
+  IMAGE_TAG: ${{ github.sha }}
+  IMAGE_NAME: democreditdev6ho4npacr.azurecr.io/demo-credit-api:${{ github.sha }}
+
+jobs:
+  build-test-deploy:
+    name: Build, test, and deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+      - name: Run tests
+        run: npm test
+
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Login to Azure Container Registry
+        run: az acr login --name "$ACR_NAME"
+
+      - name: Build Docker image
+        run: docker build -t "$IMAGE_NAME" .
+
+      - name: Push Docker image
+        run: docker push "$IMAGE_NAME"
+
+      - name: Set AKS context
+        uses: azure/aks-set-context@v4
+        with:
+          resource-group: ${{ env.AZURE_RESOURCE_GROUP }}
+          cluster-name: ${{ env.AKS_CLUSTER_NAME }}
+
+      - name: Apply base Kubernetes resources
+        run: |
+          kubectl apply -f k8s/namespace.yaml
+          kubectl apply -f k8s/configmap.yaml
+          kubectl apply -f k8s/secret-provider-class.yaml
+          kubectl apply -f k8s/mysql.yaml
+          kubectl apply -f k8s/service.yaml
+          kubectl apply -f k8s/ingress.yaml
+          kubectl apply -f k8s/hpa.yaml
+
+      - name: Wait for MySQL
+        run: |
+          kubectl wait --namespace "$NAMESPACE" \
+            --for=condition=ready pod \
+            -l app.kubernetes.io/component=mysql \
+            --timeout=300s
+
+      - name: Run database migrations
+        run: |
+          kubectl delete job demo-credit-migrations \
+            -n "$NAMESPACE" \
+            --ignore-not-found=true
+
+          sed "s|democreditdev6ho4npacr.azurecr.io/demo-credit-api:latest|${IMAGE_NAME}|g" \
+            k8s/migrations-job.yaml | kubectl apply -f -
+
+          kubectl wait --namespace "$NAMESPACE" \
+            --for=condition=complete \
+            job/demo-credit-migrations \
+            --timeout=300s
+
+      - name: Deploy API
+        run: |
+          sed "s|democreditdev6ho4npacr.azurecr.io/demo-credit-api:latest|${IMAGE_NAME}|g" \
+            k8s/deployment.yaml | kubectl apply -f -
+
+          kubectl rollout status deployment/demo-credit-api \
+            -n "$NAMESPACE" \
+            --timeout=300s
+
+      - name: Smoke test Kubernetes resources
+        run: |
+          kubectl get pods -n "$NAMESPACE"
+          kubectl get svc -n "$NAMESPACE"
+          kubectl get ingress -n "$NAMESPACE"
+          kubectl get deployment demo-credit-api \
+            -n "$NAMESPACE" \
+            -o jsonpath='{.spec.template.spec.containers[0].image}'
+          echo
